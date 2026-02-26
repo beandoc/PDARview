@@ -103,6 +103,10 @@ export function renderNavbar() {
               <span class="dd-icon">🧴</span>
               <div><strong>Supply Kit Gallery</strong><small>Everything in your kit</small></div>
             </a>
+            <a href="/supply-storage.html" class="dd-link">
+              <span class="dd-icon">📦</span>
+              <div><strong>Storage Optimizer</strong><small>AR supply room planner</small></div>
+            </a>
             <a href="/catheter-guide.html" class="dd-link">
               <span class="dd-icon">🩺</span>
               <div><strong>Catheter Guide</strong><small>Exit site anatomy</small></div>

@@ -21,6 +21,7 @@ export default defineConfig({
                 'care-diet': resolve(__dirname, 'care-diet.html'),
                 'care-checklist': resolve(__dirname, 'care-checklist.html'),
                 'supply-gallery': resolve(__dirname, 'supply-gallery.html'),
+                'supply-storage': resolve(__dirname, 'supply-storage.html'),
                 'catheter-guide': resolve(__dirname, 'catheter-guide.html'),
             },
         },

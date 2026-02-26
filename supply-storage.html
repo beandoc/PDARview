@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="Optimize your PD supply storage. Use AR to visualize how many boxes of dialysate fluid fit in your home storage area." />
+    <title>Storage Optimizer — NephroView</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <style>
+        .storage-layout {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .config-panel {
+            background: var(--bg-glass);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .storage-slider {
+            width: 100%;
+        }
+
+        .box-counter {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .config-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .config-btn {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .config-btn.active {
+            background: var(--primary-light);
+            border-color: var(--primary);
+        }
+
+        .config-btn-title {
+            display: block;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .config-btn-info {
+            display: block;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .config-btn.active .config-btn-info {
+            color: white;
+            opacity: 0.8;
+        }
+
+        .viewer-area {
+            background: var(--bg-glass);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .storage-viewer {
+            flex: 1;
+            width: 100%;
+            min-height: 500px;
+        }
+
+        .dimension-summary {
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .dim-box h5 {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .dim-box p {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        @media (max-width: 1024px) {
+            .storage-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body class="guide-content-page">
+    <nav class="navbar" id="navbar"></nav>
+
+    <section class="page-hero">
+        <div class="container">
+            <span class="hero-icon">📦</span>
+            <span class="section-tag">Logistics & Planning</span>
+            <h1 class="section-title">Storage Optimizer</h1>
+            <p class="section-subtitle">A month of PD supplies can take up significant space. Use AR to visualize
+                exactly how a shipment of fluid boxes will fit in your storage area.</p>
+        </div>
+    </section>
+
+    <section class="content-section">
+        <div class="container">
+            <div class="storage-layout">
+                <!-- Configuration Panel -->
+                <aside class="config-panel">
+                    <div class="input-group">
+                        <label>Box Quantity (Typical Shipment: 30-40)</label>
+                        <div class="box-counter" id="box-count-display">30 Boxes</div>
+                        <input type="range" min="1" max="60" value="30" class="storage-slider" id="box-slider">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Stacking Strategy</label>
+                        <div class="config-options">
+                            <button class="config-btn active" data-type="block">
+                                <span class="config-btn-title">Compact Block</span>
+                                <span class="config-btn-info">Best for closets</span>
+                            </button>
+                            <button class="config-btn" data-type="wall">
+                                <span class="config-btn-title">Flat Wall</span>
+                                <span class="config-btn-info">Best for garages</span>
+                            </button>
+                            <button class="config-btn" data-type="pallet">
+                                <span class="config-btn-title">Standard Pallet</span>
+                                <span class="config-btn-info">Best for basement</span>
+                            </button>
+                            <button class="config-btn" data-type="tower">
+                                <span class="config-btn-title">Single Tower</span>
+                                <span class="config-btn-info">Small footprint</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="info-banner" style="margin-top: auto;">
+                        <p><strong>📦 Box Specs:</strong> 18.4" x 15.2" x 7.6"<br>
+                            <strong>⚠️ Safety Limit:</strong> Do not stack more than 5 boxes high to prevent crushing or
+                            tipping.
+                        </p>
+                    </div>
+                </aside>
+
+                <!-- Viewer Area -->
+                <main class="viewer-area">
+                    <model-viewer id="storage-viewer" class="storage-viewer"
+                        src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" ar
+                        ar-modes="webxr scene-viewer quick-look" ar-scale="fixed" camera-controls touch-action="pan-y"
+                        shadow-intensity="1" exposure="1" environment-image="neutral">
+
+                        <button slot="ar-button" class="ar-button" style="bottom: 80px;">
+                            View Stack In Your Room
+                        </button>
+                    </model-viewer>
+
+                    <div class="dimension-summary">
+                        <div class="dim-box">
+                            <h5>Floor Area</h5>
+                            <p id="calc-area">0.86 m²</p>
+                        </div>
+                        <div class="dim-box">
+                            <h5>Total Height</h5>
+                            <p id="calc-height">1.25 m</p>
+                        </div>
+                        <div class="dim-box">
+                            <h5>Approx. Weight</h5>
+                            <p id="calc-weight">405 kg</p>
+                        </div>
+                    </div>
+                </main>
+            </div>
+
+            <div class="learn-card" style="margin-top: 3rem;">
+                <h2>🚚 Part 3: Delivery Day Protocol</h2>
+                <p>A typical monthly shipment can be overwhelming. Follow this sequence for a stress-free delivery.</p>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-title">Audit Your Space</div>
+                        <div class="timeline-desc">Use the AR tool above to ensure your storage area is clear and can
+                            hold
+                            the estimated number of boxes.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-title">The "Wait & Inspect"</div>
+                        <div class="timeline-desc">When the driver arrives, check for visible damage (crushed boxes or
+                            wet
+                            spots) before signing.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-title">Compare the Packing List</div>
+                        <div class="timeline-desc">Match the box labels to your prescription. Ensure you received the
+                            correct concentrations (Yellow, Green, or Red).</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-title">Organize for Training</div>
+                        <div class="timeline-desc">Keep at least 2 boxes of each solution type easily accessible for
+                            your
+                            first home training session.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="learn-card" style="margin-top: 3rem;">
+                <h2>📝 Storage Best Practices</h2>
+                <div class="pros-cons">
+                    <div class="pros-card">
+                        <h4>✅ Proper Storage</h4>
+                        <ul>
+                            <li><strong>FIFO:</strong> First-In, First-Out. Use oldest bags first.</li>
+                            <li><strong>Off the Floor:</strong> Use a pallet or shelf to prevent moisture damage.</li>
+                            <li><strong>Temperature:</strong> Keep between 15°C–30°C (59°F–86°F).</li>
+                        </ul>
+                    </div>
+                    <div class="cons-card">
+                        <h4>❌ Avoid These</h4>
+                        <ul>
+                            <li><strong>Direct Sunlight:</strong> Degrades fluid and plastic over time.</li>
+                            <li><strong>Damp Areas:</strong> Mold can form on outer boxes and contaminate connections.
+                            </li>
+                            <li><strong>Extreme Cold:</strong> Freezing causes bags to leak or burst.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>© 2026 NephroView. Calculations based on standard Vantive 2000ml box dimensions.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { renderNavbar } from '/js/nav.js';
+        renderNavbar();
+
+        const slider = document.getElementById('box-slider');
+        const display = document.getElementById('box-count-display');
+        const calcArea = document.getElementById('calc-area');
+        const calcHeight = document.getElementById('calc-height');
+        const calcWeight = document.getElementById('calc-weight');
+        const viewer = document.getElementById('storage-viewer');
+
+        // Box dimensions in meters
+        const BOX_W = 0.467;
+        const BOX_D = 0.387;
+        const BOX_H = 0.194;
+        const BOX_KG = 13.5;
+
+        let strategy = 'block';
+
+        function updateCalculations() {
+            const count = parseInt(slider.value);
+            display.innerText = `${count} Box${count > 1 ? 'es' : ''}`;
+
+            let width = 0, depth = 0, height = 0;
+
+            if (strategy === 'block') {
+                const perLayer = 4; // 2x2
+                const layers = Math.ceil(count / perLayer);
+                width = BOX_W * 2;
+                depth = BOX_D * 2;
+                height = BOX_H * layers;
+            } else if (strategy === 'wall') {
+                const perLayer = 6; // 6x1
+                const layers = Math.ceil(count / perLayer);
+                width = BOX_W * 6;
+                depth = BOX_D * 1;
+                height = BOX_H * layers;
+            } else if (strategy === 'pallet') {
+                const perLayer = 5;
+                const layers = Math.ceil(count / perLayer);
+                width = 1.2; // Standard pallet width
+                depth = 1.0; // Standard pallet depth
+                height = (BOX_H * layers) + 0.15; // + pallet height
+            } else if (strategy === 'tower') {
+                width = BOX_W;
+                depth = BOX_D;
+                height = BOX_H * count;
+            }
+
+            calcArea.innerText = `${(width * depth).toFixed(2)} m²`;
+            calcHeight.innerText = `${height.toFixed(2)} m`;
+            calcWeight.innerText = `${(count * BOX_KG).toFixed(0)} kg`;
+
+            // In a real implementation, we would switch models/parameters
+            // For this demo, we can change the scale of a basic cube model if we had one
+            console.log(`Plan updated: ${count} boxes in ${strategy} config.`);
+        }
+
+        slider.addEventListener('input', updateCalculations);
+
+        document.querySelectorAll('.config-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.config-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                strategy = btn.dataset.type;
+                updateCalculations();
+            });
+        });
+
+        updateCalculations();
+    </script>
+</body>
+
+</html>

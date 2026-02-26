@@ -134,6 +134,44 @@
             .storage-layout {
                 grid-template-columns: 1fr;
             }
+
+            .viewer-area {
+                min-height: 400px;
+            }
+
+            .dimension-summary {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+
+            .dim-box:last-child {
+                grid-column: span 2;
+                border-top: 1px solid var(--border);
+                padding-top: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .config-panel {
+                padding: 1.5rem;
+            }
+
+            .box-counter {
+                font-size: 1.5rem;
+            }
+
+            .config-options {
+                grid-template-columns: 1fr;
+            }
+
+            .dimension-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .dim-box:last-child {
+                grid-column: auto;
+            }
         }
     </style>
 </head>

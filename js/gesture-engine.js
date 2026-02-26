@@ -38,7 +38,7 @@ export class GestureEngine {
 
     startDetection() {
         const predict = () => {
-            if (this.video.currentTime !== this.lastVideoTime) {
+            if (this.video.currentTime !== this.lastVideoTime && this.video.videoWidth > 0 && this.video.videoHeight > 0) {
                 this.lastVideoTime = this.video.currentTime;
                 const results = this.handLandmarker.detectForVideo(this.video, performance.now());
                 this.processResults(results);

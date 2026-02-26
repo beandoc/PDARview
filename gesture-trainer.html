@@ -134,6 +134,7 @@
             margin: 0 0 16px 0;
             background: linear-gradient(135deg, #fff 0%, #aaa 100%);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -254,6 +255,76 @@
             cursor: pointer;
             opacity: 0.5;
         }
+
+        /* ─── Mobile Optimization ─── */
+        @media (max-width: 768px) {
+            .hud-top-left {
+                top: 20px;
+                left: 20px;
+                gap: 8px;
+            }
+
+            .gesture-badge {
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+
+            .webcam-container {
+                bottom: 20px;
+                right: 20px;
+                width: 100px;
+                height: 100px;
+                border-width: 1px;
+            }
+
+            .landing-subtitle {
+                font-size: 15px;
+                padding: 0 20px;
+                margin-bottom: 30px;
+            }
+
+            .gesture-guide {
+                gap: 15px;
+                margin-top: 40px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .guide-item {
+                flex: 1 1 40%;
+            }
+
+            .back-btn {
+                top: 20px;
+                right: 20px;
+                width: 36px;
+                height: 36px;
+            }
+
+            #info-sidebar {
+                width: 100%;
+                right: 0;
+                bottom: -400px;
+                top: auto;
+                left: 0;
+                border-radius: 24px 24px 0 0;
+                border-right: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 24px;
+                transition: bottom 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+            }
+
+            #info-sidebar.active {
+                bottom: 0;
+            }
+
+            .info-title {
+                font-size: 20px;
+            }
+
+            .info-desc {
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 
@@ -300,6 +371,11 @@
             <div id="gesture-point" class="gesture-badge">
                 <span>👆</span> Point
             </div>
+
+            <button id="model-toggle-btn" class="gesture-badge"
+                style="margin-top: 20px; cursor: pointer; pointer-events: auto;">
+                <span>🔄</span> Test Model
+            </button>
         </div>
 
         <div class="back-btn" onclick="window.location.href='/'">

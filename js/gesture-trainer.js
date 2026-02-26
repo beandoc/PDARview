@@ -21,6 +21,15 @@ class GestureTrainer {
         // Handle Start Button
         this.startBtn.addEventListener('click', () => this.startExperience());
 
+        // Handle Model Toggle
+        this.currentModelType = 'proxy';
+        const toggleBtn = document.getElementById('model-toggle-btn');
+        toggleBtn.addEventListener('click', () => {
+            this.currentModelType = this.currentModelType === 'proxy' ? 'vision-pro' : 'proxy';
+            this.scene.loadModel(this.currentModelType);
+            toggleBtn.querySelector('span:last-child').innerText = this.currentModelType === 'proxy' ? ' Test Model' : ' APD Machine';
+        });
+
         // Handle UI Close
         document.getElementById('info-close').addEventListener('click', () => {
             document.getElementById('info-sidebar').classList.remove('active');
@@ -38,7 +47,14 @@ class GestureTrainer {
             });
             this.webcamElement.srcObject = stream;
 
-            // 2. Initialize Gesture Engine
+            // 2. Wait for video to be ready
+            await new Promise((resolve) => {
+                this.webcamElement.onloadeddata = () => {
+                    resolve();
+                };
+            });
+
+            // 3. Initialize Gesture Engine
             this.engine = new GestureEngine(this.webcamElement);
             await this.engine.init();
 

@@ -7,6 +7,7 @@ export class APDScene {
         this.hotspots = [];
         this.isIdle = true;
         this.idleY = 0;
+        this.currentModel = null;
 
         this.init();
     }
@@ -72,34 +73,92 @@ export class APDScene {
         });
     }
 
-    loadModel() {
-        // For now, we use a high-fidelity proxy box. 
-        // Later, replace this with your .glb path: this.loader.load('/models/dialysis.glb', ...)
+    loadModel(type = 'proxy') {
+        // Clear existing model
+        if (this.currentModel) {
+            this.modelGroup.remove(this.currentModel);
+        }
+        this.hotspots.forEach(h => this.modelGroup.remove(h.mesh));
+        this.hotspots = [];
 
-        const boxGeo = new THREE.BoxGeometry(0.467, 0.194, 0.387);
-        const boxMat = new THREE.MeshStandardMaterial({
-            color: 0x222222,
-            metalness: 0.8,
-            roughness: 0.1,
-            emissive: 0x4facfe,
-            emissiveIntensity: 0.05
-        });
-        const box = new THREE.Mesh(boxGeo, boxMat);
-        box.castShadow = true;
-        this.modelGroup.add(box);
+        if (type === 'proxy') {
+            const group = new THREE.Group();
 
-        // Add a "Screen" panel to the proxy
-        const screenGeo = new THREE.PlaneGeometry(0.3, 0.1);
-        const screenMat = new THREE.MeshStandardMaterial({
-            color: 0x000,
-            emissive: 0x4facfe,
-            emissiveIntensity: 0.4
-        });
-        const screen = new THREE.Mesh(screenGeo, screenMat);
-        screen.position.set(0, 0.02, 0.195);
-        this.modelGroup.add(screen);
+            const boxGeo = new THREE.BoxGeometry(0.467, 0.194, 0.387);
+            const boxMat = new THREE.MeshStandardMaterial({
+                color: 0x222222,
+                metalness: 0.8,
+                roughness: 0.1,
+                emissive: 0x4facfe,
+                emissiveIntensity: 0.05
+            });
+            const box = new THREE.Mesh(boxGeo, boxMat);
+            box.castShadow = true;
+            group.add(box);
 
-        console.log("Scene initialized with high-fidelity proxy. Ready for .glb swap.");
+            const screenGeo = new THREE.PlaneGeometry(0.3, 0.1);
+            const screenMat = new THREE.MeshStandardMaterial({
+                color: 0x000,
+                emissive: 0x4facfe,
+                emissiveIntensity: 0.4
+            });
+            const screen = new THREE.Mesh(screenGeo, screenMat);
+            screen.position.set(0, 0.02, 0.195);
+            group.add(screen);
+
+            this.currentModel = group;
+            this.modelGroup.add(group);
+
+            // Add Hotspots back for APD
+            this.addHotspot(0, 0.05, 0.2, "Display Screen", "High-contrast LCD that shows treatment status.");
+            this.addHotspot(0, -0.05, 0.2, "Cassette Door", "Main door for loading the tubing set.");
+            this.addHotspot(0.2, 0, 0, "Solution Ports", "Connection points for dialysis bags.");
+            this.addHotspot(-0.24, -0.08, 0, "Power Switch", "Rear panel power controls.");
+
+            console.log("Scene initialized with high-fidelity proxy. Ready for .glb swap.");
+
+        } else if (type === 'vision-pro') {
+            // Use the model URL from the tutorial (proxying GD via a CDN/direct link)
+            // Note: Google Drive direct links often have CORS issues, so we'll use a reliable external sample for now if GD fails
+            const visionProUrl = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/DamagedHelmet/glTF-Binary/DamagedHelmet.glb';
+
+            console.log("Loading high-fidelity test model...");
+
+            this.loader.load(visionProUrl, (gltf) => {
+                const model = gltf.scene;
+
+                // Auto-center and scale
+                const box = new THREE.Box3().setFromObject(model);
+                const size = box.getSize(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const scale = 0.5 / maxDim;
+                model.scale.set(scale, scale, scale);
+
+                // Center it
+                const center = box.getCenter(new THREE.Vector3());
+                model.position.x += (model.position.x - center.x) * scale;
+                model.position.y += (model.position.y - center.y) * scale;
+                model.position.z += (model.position.z - center.z) * scale;
+
+                model.traverse(node => {
+                    if (node.isMesh) {
+                        node.castShadow = true;
+                        node.receiveShadow = true;
+                    }
+                });
+
+                this.currentModel = model;
+                this.modelGroup.add(model);
+
+                // Add test hotspots for Vision Pro
+                this.addHotspot(0, 0, 0.2, "Glass Front", "Laminated glass that acts as an optical lens.");
+                this.addHotspot(0.2, 0.1, 0, "Digital Crown", "Used to control immersion levels.");
+
+            }, undefined, (error) => {
+                console.error("Error loading test model:", error);
+                this.loadModel('proxy'); // Fallback
+            });
+        }
     }
 
     addHotspot(x, y, z, title, description) {

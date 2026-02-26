@@ -157,9 +157,9 @@
                 <!-- Configuration Panel -->
                 <aside class="config-panel">
                     <div class="input-group">
-                        <label>Box Quantity (Typical Shipment: 30-40)</label>
+                        <label>Box Quantity (Typical Shipment: 30-60)</label>
                         <div class="box-counter" id="box-count-display">30 Boxes</div>
-                        <input type="range" min="1" max="60" value="30" class="storage-slider" id="box-slider">
+                        <input type="range" min="1" max="80" value="30" class="storage-slider" id="box-slider">
                     </div>
 
                     <div class="input-group">
@@ -184,10 +184,10 @@
                         </div>
                     </div>
 
-                    <div class="info-banner" style="margin-top: auto;">
-                        <p><strong>📦 Box Specs:</strong> 18.4" x 15.2" x 7.6"<br>
-                            <strong>⚠️ Safety Limit:</strong> Do not stack more than 5 boxes high to prevent crushing or
-                            tipping.
+                    <div class="info-banner" style="margin-top: auto; border-left: 4px solid var(--primary-light);">
+                        <p><strong>📦 Vantive Box:</strong> 29 x 47 x 17 cm<br>
+                            <strong>⚖️ Weight:</strong> 12.5 kg (27.5 lbs)<br>
+                            <strong>🏠 Goal:</strong> Clear a space 7ft wide x 5ft high.
                         </p>
                     </div>
                 </aside>
@@ -297,10 +297,11 @@
         const viewer = document.getElementById('storage-viewer');
 
         // Box dimensions in meters
-        const BOX_W = 0.467;
-        const BOX_D = 0.387;
-        const BOX_H = 0.194;
-        const BOX_KG = 13.5;
+        // Standard Vantive Box dimensions in meters
+        const BOX_W = 0.29;
+        const BOX_D = 0.47;
+        const BOX_H = 0.17;
+        const BOX_KG = 12.5;
 
         let strategy = 'block';
 

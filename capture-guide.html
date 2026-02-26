@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="Step-by-step guide for clinicians to capture a 3D scan of an APD machine using iPhone for AR viewing." />
+    <title>Capture Guide — NephroView</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/css/styles.css" />
+</head>
+
+<body class="guide-page">
+    <!-- ─── Navigation ─── -->
+    <nav class="navbar" id="navbar"></nav>
+
+    <!-- ─── Guide Hero ─── -->
+    <section class="guide-hero">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">For Clinicians & Developers</span>
+                <h1 class="section-title">3D Capture Guide</h1>
+                <p class="section-subtitle">How to scan your APD machine with iPhone 16 Plus and deliver it to patients
+                    in AR.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── Pipeline Overview ─── -->
+    <section class="section" id="pipeline">
+        <div class="container">
+            <div class="pipeline-flow">
+                <div class="pipeline-step">
+                    <div class="pipe-num">1</div>
+                    <div class="pipe-icon">📸</div>
+                    <span>Capture</span>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step">
+                    <div class="pipe-num">2</div>
+                    <div class="pipe-icon">⚙️</div>
+                    <span>Process</span>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step">
+                    <div class="pipe-num">3</div>
+                    <div class="pipe-icon">📦</div>
+                    <span>Export</span>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step">
+                    <div class="pipe-num">4</div>
+                    <div class="pipe-icon">🚀</div>
+                    <span>Deploy</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── Step 1: Preparation ─── -->
+    <section class="section guide-step-section" id="step-prep">
+        <div class="container">
+            <div class="guide-card">
+                <div class="guide-step-header">
+                    <span class="guide-step-num">Step 1</span>
+                    <h2>Prepare the Machine</h2>
+                </div>
+                <div class="guide-step-body">
+                    <div class="guide-checklist">
+                        <div class="check-item">
+                            <span class="check-icon">🔌</span>
+                            <div>
+                                <strong>Turn off the machine</strong>
+                                <p>The display emits light that creates artifacts in the 3D scan. Power it down
+                                    completely, or place a matte sticker over the screen.</p>
+                            </div>
+                        </div>
+                        <div class="check-item">
+                            <span class="check-icon">🧹</span>
+                            <div>
+                                <strong>Clean the plastic casing</strong>
+                                <p>Wipe down the glossy surfaces with a microfiber cloth to remove fingerprints and
+                                    smudges. These create false specular highlights.</p>
+                            </div>
+                        </div>
+                        <div class="check-item">
+                            <span class="check-icon">💡</span>
+                            <div>
+                                <strong>Set up diffused lighting</strong>
+                                <p>Avoid harsh overhead fluorescent lights. Use window light or multiple soft light
+                                    sources to minimize hard reflections on the plastic.</p>
+                            </div>
+                        </div>
+                        <div class="check-item">
+                            <span class="check-icon">🪑</span>
+                            <div>
+                                <strong>Position on a table</strong>
+                                <p>Place the machine on a plain-colored surface (not white — use a gray or beige table).
+                                    Ensure you can walk a full 360° around it.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="guide-tip">
+                        <div class="tip-icon">💡</div>
+                        <div>
+                            <strong>Pro Tip — Glossy Plastics</strong>
+                            <p>If you have spray-on matte coating (like Helling 3D Anti-Glare Spray), a light mist on
+                                the glossiest areas dramatically improves scan quality. It washes off easily.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── Step 2: Scanning ─── -->
+    <section class="section guide-step-section" id="step-scan">
+        <div class="container">
+            <div class="guide-card">
+                <div class="guide-step-header">
+                    <span class="guide-step-num">Step 2</span>
+                    <h2>Scan with iPhone 16 Plus</h2>
+                </div>
+                <div class="guide-step-body">
+                    <div class="guide-columns">
+                        <div class="guide-col">
+                            <h3>📱 Recommended Apps</h3>
+                            <div class="app-cards">
+                                <div class="app-card">
+                                    <div class="app-badge">Recommended</div>
+                                    <strong>Polycam</strong>
+                                    <p>Best for object scanning with LiDAR. Exports directly to USDZ and GLB. Free tier
+                                        available.</p>
+                                </div>
+                                <div class="app-card">
+                                    <strong>Luma AI</strong>
+                                    <p>Uses Gaussian Splatting for photorealistic captures. Cloud processing. Great for
+                                        complex geometry.</p>
+                                </div>
+                                <div class="app-card">
+                                    <strong>Reality Composer</strong>
+                                    <p>Apple's free app. Good for simple scans and native USDZ export. Built into iOS.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="guide-col">
+                            <h3>🎥 Scanning Technique</h3>
+                            <div class="orbit-guide">
+                                <div class="orbit-level">
+                                    <div class="orbit-visual">
+                                        <div class="orbit-ring ring-1"></div>
+                                        <div class="orbit-center"></div>
+                                    </div>
+                                    <div>
+                                        <strong>Orbit 1 — Eye Level</strong>
+                                        <p>Walk slowly around the machine at table height. Keep steady, ~60 cm distance.
+                                            Full 360°.</p>
+                                    </div>
+                                </div>
+                                <div class="orbit-level">
+                                    <div class="orbit-visual">
+                                        <div class="orbit-ring ring-2"></div>
+                                        <div class="orbit-center"></div>
+                                    </div>
+                                    <div>
+                                        <strong>Orbit 2 — High Angle (45°)</strong>
+                                        <p>Raise the phone above the machine, angled downward. Captures the top surface
+                                            details.</p>
+                                    </div>
+                                </div>
+                                <div class="orbit-level">
+                                    <div class="orbit-visual">
+                                        <div class="orbit-ring ring-3"></div>
+                                        <div class="orbit-center"></div>
+                                    </div>
+                                    <div>
+                                        <strong>Orbit 3 — Low Angle</strong>
+                                        <p>Crouch down and capture the underside lip and front panel. Capture connection
+                                            ports on the back.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="guide-tip">
+                                <div class="tip-icon">⏱️</div>
+                                <div>
+                                    <strong>Timing</strong>
+                                    <p>Each orbit takes about 30-45 seconds. Total scan time: ~2-3 minutes. Move slowly
+                                        and steadily — no jerky movements.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── Step 3: Processing & Export ─── -->
+    <section class="section guide-step-section" id="step-export">
+        <div class="container">
+            <div class="guide-card">
+                <div class="guide-step-header">
+                    <span class="guide-step-num">Step 3</span>
+                    <h2>Process & Export</h2>
+                </div>
+                <div class="guide-step-body">
+                    <h3>🔄 From Gaussian Splat to AR-Ready Mesh</h3>
+                    <p class="guide-explainer">
+                        Your iPhone captures a <strong>Gaussian Splat</strong> — a cloud of colored light blobs. This
+                        looks amazing in a browser but phones expect solid 3D polygon meshes for AR.
+                        The scanning apps convert ("bake") the splat into standard formats:
+                    </p>
+                    <div class="format-cards">
+                        <div class="format-card format-usdz">
+                            <div class="format-badge">Apple</div>
+                            <h4>.USDZ</h4>
+                            <p>For iOS devices. Used by AR Quick Look in Safari. Set this as the <code>ios-src</code>
+                                attribute in model-viewer.</p>
+                            <div class="format-size">Typical size: 5-15 MB</div>
+                        </div>
+                        <div class="format-card format-glb">
+                            <div class="format-badge">Universal</div>
+                            <h4>.GLB</h4>
+                            <p>For Android + web viewing. Used by Scene Viewer and model-viewer's main <code>src</code>
+                                attribute.</p>
+                            <div class="format-size">Typical size: 3-10 MB</div>
+                        </div>
+                    </div>
+
+                    <div class="guide-tip">
+                        <div class="tip-icon">⚠️</div>
+                        <div>
+                            <strong>Important — Scale Calibration</strong>
+                            <p>Before exporting, ensure the model dimensions match the real machine (46.7 × 38.7 × 19.4
+                                cm). Most scanning apps let you set a reference measurement. This ensures 1:1 scale in
+                                AR.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── Step 4: Deploy ─── -->
+    <section class="section guide-step-section" id="step-deploy">
+        <div class="container">
+            <div class="guide-card">
+                <div class="guide-step-header">
+                    <span class="guide-step-num">Step 4</span>
+                    <h2>Deploy to This App</h2>
+                </div>
+                <div class="guide-step-body">
+                    <div class="deploy-steps">
+                        <div class="deploy-step">
+                            <span class="deploy-num">A</span>
+                            <div>
+                                <strong>Replace the placeholder model</strong>
+                                <p>Copy your exported files to the project's <code>public/models/</code> folder:</p>
+                                <pre><code>public/models/apd-machine.glb   ← Android + Web
+public/models/apd-machine.usdz  ← iOS AR Quick Look</code></pre>
+                            </div>
+                        </div>
+                        <div class="deploy-step">
+                            <span class="deploy-num">B</span>
+                            <div>
+                                <strong>Update hotspot positions</strong>
+                                <p>Open the viewer page, use browser DevTools to adjust <code>data-position</code> and
+                                    <code>data-normal</code> attributes on each hotspot to match your real model's
+                                    geometry.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="deploy-step">
+                            <span class="deploy-num">C</span>
+                            <div>
+                                <strong>Deploy to web hosting</strong>
+                                <p>Push to Vercel or Netlify for instant public URL:</p>
+                                <pre><code>npx vercel --prod</code></pre>
+                                <p>Share the URL or generated QR code with patients.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── Footer ─── -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>© 2026 NephroView. <a href="/">← Back to Home</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { renderNavbar } from '/js/nav.js';
+        renderNavbar();
+    </script>
+    <script type="module" src="/js/capture-guide.js"></script>
+</body>
+
+</html>

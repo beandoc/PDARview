@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="How to handle common PD cycler alarms like Low Drain, Check Lines, and Power Failures. Stay calm and follow the steps." />
+    <title>Troubleshooting Alarms — NephroView</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/css/styles.css" />
+</head>
+
+<body class="guide-content-page">
+    <nav class="navbar" id="navbar"></nav>
+
+    <section class="page-hero">
+        <div class="container">
+            <span class="hero-icon">🚨</span>
+            <span class="section-tag">Machine Help</span>
+            <h1 class="section-title">Troubleshooting Alarms</h1>
+            <p class="section-subtitle">The cycler uses alarms to keep you safe. Most alarms are simple fixes that you
+                can handle yourself without worry.</p>
+        </div>
+    </section>
+
+    <section class="content-section">
+        <div class="content-container">
+            <nav class="page-nav">
+                <a href="/">Home</a> <span>›</span> <a href="/guide-troubleshooting.html">Troubleshooting</a>
+            </nav>
+
+            <div class="learn-card" id="low-drain">
+                <h2>📉 Alarm: Low Drain / Slow Flow</h2>
+                <p>This is the most common alarm. It means the solution isn't draining out of your abdomen at the
+                    expected speed.</p>
+                <h3>Common Causes & Fixes:</h3>
+                <ul>
+                    <li><strong>Kinked tubing:</strong> Check the line from your catheter to the machine. Ensure you
+                        aren't laying on it.</li>
+                    <li><strong>Constipation:</strong> If your bowels are full, they can press against the catheter.
+                        Take your prescribed stool softener.</li>
+                    <li><strong>Position:</strong> Sometimes the catheter tip is resting against the wall of your
+                        peritoneum. Try rolling onto your other side or sitting up.</li>
+                    <li><strong>Bag height:</strong> Ensure your drain bag is sitting lower than your body level.</li>
+                </ul>
+                <div class="info-banner">
+                    <span class="info-banner-icon">💡</span>
+                    <p><strong>Try the "PD Roll".</strong> Gently turn from side to side in bed. This often shifts the
+                        fluid and allows the drain to resume automatically.</p>
+                </div>
+            </div>
+
+            <div class="learn-card" id="check-lines">
+                <h2>👀 Alarm: Check Lines / Air in Line</h2>
+                <p>The machine has detected a blockage or a small air bubble in the tubing.</p>
+                <ul>
+                    <li><strong>Check all clamps:</strong> Ensure all white clamps on the solution bags are OPEN.</li>
+                    <li><strong>Check your transfer set:</strong> Ensure your twist-clamp is fully OPEN.</li>
+                    <li><strong>Look for bubbles:</strong> If you see a large bubble, follow the machine prompts to
+                        "Bypass" or "Re-prime" if necessary. Small bubbles are normal and caught by the machine's air
+                        trap.</li>
+                </ul>
+            </div>
+
+            <div class="learn-card" id="power-failure">
+                <h2>🔌 Alarm: Power Failure</h2>
+                <p>If the power goes out during your treatment:</p>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-title">Don't Panic</div>
+                        <div class="timeline-desc">The HomeChoice Claria has an internal memory. It will remember
+                            exactly where you were in your treatment.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-title">Clamp & Relax</div>
+                        <div class="timeline-desc">Clamp your transfer set and wait for the power to return if you
+                            expect it soon.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-title">Resume</div>
+                        <div class="timeline-desc">Once power returns, the machine will ask if you want to "Resume" or
+                            "End Therapy". Choose Resume.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">Important</div>
+                        <div class="timeline-title">Prolonged Outage</div>
+                        <div class="timeline-desc">If power is out for more than 2 hours, call your PD nurse. You may
+                            need to do a manual exchange (CAPD) to stay on schedule.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="learn-card" id="system-error">
+                <h2>⚠️ System Error (Exxxx)</h2>
+                <p>If you see a code starting with 'E' (e.g., E304):</p>
+                <ol>
+                    <li>Write down the exact code.</li>
+                    <li>Turn the machine off, wait 10 seconds, and turn it back on.</li>
+                    <li>If the error persists, do not use the machine. Call the technical support number on the side of
+                        the cycler.</li>
+                </ol>
+            </div>
+
+            <div class="content-footer">
+                <h3>Still Need Help?</h3>
+                <p>If an alarm won't clear or you feel unwell, contact your care team immediately.</p>
+                <div class="btn-group">
+                    <a href="/guide-emergency.html" class="btn btn-primary"><span class="btn-icon">🆘</span> Emergency
+                        Contact Info</a>
+                    <a href="/viewer.html" class="btn btn-secondary"><span class="btn-icon">📱</span> See Machine
+                        Components</a>
+                </div>
+            </div>
+
+            <div class="medical-disclaimer">
+                ⚠️ Never ignore multiple alarms. If the machine is repeatedly alarming for Low Drain, you may need a
+                manual drain. Contact your nurse if you cannot resolve an alarm after 3 attempts.
+            </div>
+
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>© 2026 NephroView. For educational purposes only.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { renderNavbar } from '/js/nav.js';
+        renderNavbar();
+    </script>
+</body>
+
+</html>

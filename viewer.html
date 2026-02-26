@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="View the Baxter HomeChoice Claria APD machine in 3D and place it in your own room using Augmented Reality." />
+    <title>3D Viewer — NephroView</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/css/styles.css" />
+</head>
+
+<body class="viewer-page">
+    <!-- ─── Navigation ─── -->
+    <nav class="navbar navbar-viewer" id="navbar"></nav>
+
+    <!-- ─── Viewer Container ─── -->
+    <main class="viewer-main">
+        <!-- Model Viewer -->
+        <div class="viewer-wrapper" id="viewer-wrapper">
+            <model-viewer id="apd-viewer" src="https://modelviewer.dev/shared-assets/models/NeilArmstrong.glb"
+                ios-src="" ar ar-modes="webxr scene-viewer quick-look" ar-scale="fixed" camera-controls
+                touch-action="pan-y" shadow-intensity="1.2" shadow-softness="0.8" exposure="1"
+                environment-image="neutral"
+                alt="Baxter HomeChoice Claria APD Machine — Automated Peritoneal Dialysis Cycler"
+                camera-orbit="45deg 65deg 2.5m" min-camera-orbit="auto auto 1m" max-camera-orbit="auto auto 5m"
+                field-of-view="30deg" interaction-prompt="auto" loading="eager">
+                <!-- ─── AR Button ─── -->
+                <button slot="ar-button" class="ar-button" id="ar-button">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M3 7V5C3 3.89 3.89 3 5 3H7M17 3H19C20.1 3 21 3.9 21 5V7M21 17V19C21 20.1 20.1 21 19 21H17M7 21H5C3.9 21 3 20.1 3 19V17"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+                    </svg>
+                    View In Your Space
+                </button>
+
+                <!-- ─── Interactive Hotspots ─── -->
+                <button class="hotspot" slot="hotspot-screen" data-position="0 0.15 0.1" data-normal="0 0 1"
+                    data-visibility-attribute="visible" id="hotspot-screen">
+                    <div class="hotspot-dot"></div>
+                    <div class="hotspot-label" id="label-screen">
+                        <h4>🖥️ Display Screen</h4>
+                        <p>Shows treatment progress, settings, and alarms. Features auto-dim for nighttime use.</p>
+                        <button class="hotspot-close" aria-label="Close">✕</button>
+                    </div>
+                </button>
+
+                <button class="hotspot" slot="hotspot-cassette" data-position="-0.2 0 0.15" data-normal="0 0 1"
+                    data-visibility-attribute="visible" id="hotspot-cassette">
+                    <div class="hotspot-dot"></div>
+                    <div class="hotspot-label" id="label-cassette">
+                        <h4>💊 Cassette Door</h4>
+                        <p>Open this door to load your disposable tubing set (cassette). Your nurse will show you how
+                            during training.</p>
+                        <button class="hotspot-close" aria-label="Close">✕</button>
+                    </div>
+                </button>
+
+                <button class="hotspot" slot="hotspot-power" data-position="0.25 -0.05 -0.15" data-normal="1 0 0"
+                    data-visibility-attribute="visible" id="hotspot-power">
+                    <div class="hotspot-dot"></div>
+                    <div class="hotspot-label" id="label-power">
+                        <h4>⚡ Power Switch</h4>
+                        <p>Located on the back panel. If an alarm goes off at night, you can reach behind to power cycle
+                            the machine.</p>
+                        <button class="hotspot-close" aria-label="Close">✕</button>
+                    </div>
+                </button>
+
+                <button class="hotspot" slot="hotspot-drain" data-position="0.2 -0.1 0.15" data-normal="0 0 1"
+                    data-visibility-attribute="visible" id="hotspot-drain">
+                    <div class="hotspot-dot"></div>
+                    <div class="hotspot-label" id="label-drain">
+                        <h4>🔌 Drain Line Port</h4>
+                        <p>Connects to the drain bag or directly to a household drain. The tubing reaches approximately
+                            2 meters (6.5 ft).</p>
+                        <button class="hotspot-close" aria-label="Close">✕</button>
+                    </div>
+                </button>
+
+                <!-- ─── Dimension Annotations ─── -->
+                <div class="dimension-hotspot" slot="hotspot-dim-x" data-position="0 -0.15 0.2" data-normal="0 0 1">
+                    <span class="dim-value">46.7 cm</span>
+                    <span class="dim-label">width</span>
+                </div>
+                <div class="dimension-hotspot" slot="hotspot-dim-y" data-position="-0.3 0.05 0" data-normal="-1 0 0">
+                    <span class="dim-value">19.4 cm</span>
+                    <span class="dim-label">height</span>
+                </div>
+                <div class="dimension-hotspot" slot="hotspot-dim-z" data-position="0.3 -0.15 0" data-normal="1 0 0">
+                    <span class="dim-value">38.7 cm</span>
+                    <span class="dim-label">depth</span>
+                </div>
+
+                <!-- ─── Loading Poster ─── -->
+                <div class="progress-bar" slot="progress-bar">
+                    <div class="update-bar" id="progress-bar-update"></div>
+                </div>
+
+            </model-viewer>
+
+            <!-- ─── Floating Controls ─── -->
+            <div class="viewer-controls" id="viewer-controls">
+                <div class="control-group">
+                    <span class="control-label">Camera Views</span>
+                    <div class="control-buttons">
+                        <button class="control-btn" data-orbit="0deg 75deg 2.5m" title="Front View"
+                            id="view-front">Front</button>
+                        <button class="control-btn" data-orbit="180deg 75deg 2.5m" title="Back View"
+                            id="view-back">Back</button>
+                        <button class="control-btn" data-orbit="90deg 75deg 2.5m" title="Side View"
+                            id="view-side">Side</button>
+                        <button class="control-btn" data-orbit="45deg 30deg 2.5m" title="Top View"
+                            id="view-top">Top</button>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <span class="control-label">Display</span>
+                    <div class="control-buttons">
+                        <button class="control-btn active" id="toggle-hotspots" title="Toggle Hotspots">
+                            <span>📌</span> Hotspots
+                        </button>
+                        <button class="control-btn" id="toggle-dimensions" title="Toggle Dimensions">
+                            <span>📐</span> Dimensions
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── Info Panel (Slides in from right) ─── -->
+        <aside class="info-panel" id="info-panel">
+            <button class="panel-toggle" id="panel-toggle" aria-label="Toggle info panel">
+                <span class="panel-toggle-icon">ℹ️</span>
+            </button>
+            <div class="panel-content">
+                <div class="panel-header">
+                    <h2>Baxter HomeChoice Claria</h2>
+                    <p class="panel-subtitle">Automated Peritoneal Dialysis System</p>
+                </div>
+
+                <div class="panel-section">
+                    <h3>📐 Specifications</h3>
+                    <table class="spec-table">
+                        <tr>
+                            <td>Width</td>
+                            <td>46.7 cm (18.4")</td>
+                        </tr>
+                        <tr>
+                            <td>Depth</td>
+                            <td>38.7 cm (15.2")</td>
+                        </tr>
+                        <tr>
+                            <td>Height</td>
+                            <td>19.4 cm (7.6")</td>
+                        </tr>
+                        <tr>
+                            <td>Weight</td>
+                            <td>13.5 kg (29.7 lbs)</td>
+                        </tr>
+                        <tr>
+                            <td>Power</td>
+                            <td>Standard outlet, ≤ 600 VA</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="panel-section">
+                    <h3>🌙 Designed for Sleep</h3>
+                    <ul class="feature-list">
+                        <li>Whisper-quiet pump operation</li>
+                        <li>Auto-dimming backlit screen</li>
+                        <li>Simple alarm guidance on display</li>
+                        <li>Patient line ~2 m for bed movement</li>
+                    </ul>
+                </div>
+
+                <div class="panel-section">
+                    <h3>📡 Remote Monitoring</h3>
+                    <p>Connects to the <strong>Sharesource</strong> platform so your care team can monitor your
+                        treatments remotely and adjust prescriptions without an office visit.</p>
+                </div>
+
+                <div class="panel-section">
+                    <h3>💡 Tips for Placement</h3>
+                    <ul class="feature-list">
+                        <li>Place on a stable, flat surface near your bed</li>
+                        <li>Keep within 2 m reach of where you sleep</li>
+                        <li>Ensure power outlet is nearby</li>
+                        <li>Leave clearance behind for ventilation</li>
+                    </ul>
+                </div>
+
+                <a href="/" class="btn btn-outline btn-sm panel-back-btn">← Back to Home</a>
+            </div>
+        </aside>
+
+        <!-- ─── First-time Hint Overlay ─── -->
+        <div class="hint-overlay" id="hint-overlay">
+            <div class="hint-content">
+                <div class="hint-icon">👆</div>
+                <p>Drag to rotate • Pinch to zoom • Tap hotspots for info</p>
+                <button class="btn btn-primary btn-sm" id="dismiss-hint">Got it!</button>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { renderNavbar } from '/js/nav.js';
+        renderNavbar();
+    </script>
+    <script type="module" src="/js/viewer.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="NephroView — Interactive 3D, AR, and educational platform for peritoneal dialysis patients and clinicians. Learn about CKD, PD, and explore your APD machine." />
+  <title>NephroView — Peritoneal Dialysis Education & AR Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+
+<body>
+  <!-- ─── Navigation ─── -->
+  <nav class="navbar" id="navbar"></nav>
+
+  <!-- ─── Hero Section ─── -->
+  <section class="hero" id="hero">
+    <div class="hero-bg-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        Nephrology Education & Augmented Reality
+      </div>
+      <h1 class="hero-title">
+        Your Complete Guide to
+        <span class="title-gradient">Peritoneal Dialysis</span>
+      </h1>
+      <p class="hero-subtitle">
+        Learn about kidney disease, explore your APD machine in AR, master treatment techniques,
+        and take control of your care — all in one place.
+      </p>
+      <div class="hero-actions">
+        <a href="/viewer.html" class="btn btn-primary btn-lg" id="view-machine-btn">
+          <span class="btn-icon">📱</span>
+          Explore in AR
+        </a>
+        <a href="#explore" class="btn btn-secondary btn-lg">
+          Start Learning
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-value">1:1</span>
+          <span class="stat-label">Real Scale AR</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-value">15+</span>
+          <span class="stat-label">Educational Guides</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-value">0</span>
+          <span class="stat-label">Apps to Download</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="phone-mockup">
+        <div class="phone-screen">
+          <div class="ar-preview">
+            <div class="ar-grid"></div>
+            <div class="ar-machine-silhouette">
+              <div class="machine-body">
+                <div class="machine-screen-indicator"></div>
+                <div class="machine-cassette"></div>
+              </div>
+              <div class="ar-placement-ring"></div>
+            </div>
+            <div class="ar-badge-overlay">AR Mode Active</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Explore Hub ─── -->
+  <section class="section" id="explore">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Explore NephroView</span>
+        <h2 class="section-title">Everything You Need to Know</h2>
+        <p class="section-subtitle">From understanding kidney disease to mastering your nightly dialysis routine.</p>
+      </div>
+
+      <div class="hub-grid">
+        <a href="/learn-ckd.html" class="hub-card">
+          <span class="hub-card-icon">🫘</span>
+          <h3>Understanding CKD</h3>
+          <p>Learn how kidneys work, what goes wrong in chronic kidney disease, the 5 stages, and when dialysis becomes
+            necessary.</p>
+        </a>
+        <a href="/learn-pd.html" class="hub-card">
+          <span class="hub-card-icon">💧</span>
+          <h3>What is Peritoneal Dialysis?</h3>
+          <p>How PD works, the fill-dwell-drain cycle, APD vs CAPD, the catheter, and benefits of home dialysis.</p>
+        </a>
+        <a href="/learn-comparison.html" class="hub-card">
+          <span class="hub-card-icon">⚖️</span>
+          <h3>PD vs Hemodialysis</h3>
+          <p>Side-by-side comparison of schedule, lifestyle, diet, access type, and outcomes for both modalities.</p>
+        </a>
+        <a href="/learn-daily-life.html" class="hub-card">
+          <span class="hub-card-icon">🌅</span>
+          <h3>Life on PD</h3>
+          <p>A typical day from morning to night, supply management, exercise, travel, work, and mental well-being.</p>
+        </a>
+        <a href="/viewer.html" class="hub-card">
+          <span class="hub-card-icon">📱</span>
+          <h3>APD Machine — 3D & AR</h3>
+          <p>See the Baxter HomeChoice Claria cycler in 3D. Tap hotspots to learn about each part. Place it in your room
+            with AR.</p>
+        </a>
+        <a href="/capture-guide.html" class="hub-card">
+          <span class="hub-card-icon">📸</span>
+          <h3>3D Capture Guide</h3>
+          <p>For clinicians: step-by-step guide to scan medical equipment with iPhone and deploy to this platform.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── How It Works ─── -->
+  <section class="section how-it-works" id="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">AR Experience</span>
+        <h2 class="section-title">See Your Machine in AR</h2>
+        <p class="section-subtitle">Three simple steps — no app download, no special equipment.</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card" data-step="1">
+          <div class="step-number">01</div>
+          <div class="step-icon-wrapper">
+            <div class="step-icon">📩</div>
+          </div>
+          <h3 class="step-title">Get Your Link</h3>
+          <p class="step-desc">Your clinic sends you a link via SMS or email — no app store visit needed.</p>
+        </div>
+        <div class="step-connector">
+          <svg viewBox="0 0 100 20">
+            <path d="M0 10 H100" stroke="currentColor" stroke-width="2" stroke-dasharray="6 4" fill="none" />
+            <path d="M90 5 L100 10 L90 15" stroke="currentColor" stroke-width="2" fill="none" />
+          </svg>
+        </div>
+        <div class="step-card" data-step="2">
+          <div class="step-number">02</div>
+          <div class="step-icon-wrapper">
+            <div class="step-icon">👀</div>
+          </div>
+          <h3 class="step-title">Explore in 3D</h3>
+          <p class="step-desc">Spin, zoom, and tap hotspots to learn about each component of your APD machine.</p>
+        </div>
+        <div class="step-connector">
+          <svg viewBox="0 0 100 20">
+            <path d="M0 10 H100" stroke="currentColor" stroke-width="2" stroke-dasharray="6 4" fill="none" />
+            <path d="M90 5 L100 10 L90 15" stroke="currentColor" stroke-width="2" fill="none" />
+          </svg>
+        </div>
+        <div class="step-card" data-step="3">
+          <div class="step-number">03</div>
+          <div class="step-icon-wrapper">
+            <div class="step-icon">🏠</div>
+          </div>
+          <h3 class="step-title">Place in Your Room</h3>
+          <p class="step-desc">Tap "View in Your Space" to see the machine at real size on your nightstand.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Machine Specs ─── -->
+  <section class="section machine-specs" id="machine-specs">
+    <div class="container">
+      <div class="specs-layout">
+        <div class="specs-content">
+          <span class="section-tag">Baxter HomeChoice Claria</span>
+          <h2 class="section-title">Know Your Machine</h2>
+          <p class="specs-intro">The HomeChoice Claria APD system performs automated peritoneal dialysis while you
+            sleep. Here's everything you need to know about its size and features.</p>
+          <div class="specs-grid">
+            <div class="spec-item">
+              <div class="spec-icon">📐</div>
+              <div class="spec-info">
+                <span class="spec-label">Dimensions</span>
+                <span class="spec-value">46.7 × 38.7 × 19.4 cm</span>
+              </div>
+            </div>
+            <div class="spec-item">
+              <div class="spec-icon">⚖️</div>
+              <div class="spec-info">
+                <span class="spec-label">Weight</span>
+                <span class="spec-value">13.5 kg (29.7 lbs)</span>
+              </div>
+            </div>
+            <div class="spec-item">
+              <div class="spec-icon">📡</div>
+              <div class="spec-info">
+                <span class="spec-label">Connectivity</span>
+                <span class="spec-value">Sharesource Remote Monitoring</span>
+              </div>
+            </div>
+            <div class="spec-item">
+              <div class="spec-icon">🔇</div>
+              <div class="spec-info">
+                <span class="spec-label">Noise Level</span>
+                <span class="spec-value">Whisper-quiet operation</span>
+              </div>
+            </div>
+            <div class="spec-item">
+              <div class="spec-icon">🌙</div>
+              <div class="spec-info">
+                <span class="spec-label">Screen</span>
+                <span class="spec-value">Auto-dimming display</span>
+              </div>
+            </div>
+            <div class="spec-item">
+              <div class="spec-icon">🔌</div>
+              <div class="spec-info">
+                <span class="spec-label">Power</span>
+                <span class="spec-value">Standard household outlet</span>
+              </div>
+            </div>
+          </div>
+          <a href="/viewer.html" class="btn btn-primary">
+            <span class="btn-icon">🔍</span>
+            Explore in 3D
+          </a>
+        </div>
+        <div class="specs-visual">
+          <div class="machine-card">
+            <div class="machine-illustration">
+              <div class="machine-3d-box">
+                <div class="box-face box-front">
+                  <div class="face-screen"></div>
+                  <div class="face-cassette"></div>
+                  <div class="face-label">HomeChoice Claria</div>
+                </div>
+                <div class="box-face box-top"></div>
+                <div class="box-face box-right"></div>
+              </div>
+              <div class="dimension-label dim-width">46.7 cm</div>
+              <div class="dimension-label dim-height">19.4 cm</div>
+              <div class="dimension-label dim-depth">38.7 cm</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Patient FAQ ─── -->
+  <section class="section faq-section" id="faq">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Common Questions</span>
+        <h2 class="section-title">What Patients Ask</h2>
+        <p class="section-subtitle">The most common concerns about starting peritoneal dialysis.</p>
+      </div>
+      <div class="faq-list">
+        <details class="faq-item" id="faq-fit">
+          <summary class="faq-question">
+            <span class="faq-icon">📏</span>
+            Will the machine fit on my nightstand?
+            <span class="faq-chevron">▾</span>
+          </summary>
+          <div class="faq-answer">
+            <p>The Claria is about the size of a large toaster — 46.7 cm wide × 38.7 cm deep × 19.4 cm tall. Most
+              nightstands have plenty of room. Use our <a href="/viewer.html">3D viewer</a> to place it in AR on your
+              actual furniture and see for yourself!</p>
+          </div>
+        </details>
+        <details class="faq-item" id="faq-noise">
+          <summary class="faq-question">
+            <span class="faq-icon">🔊</span>
+            How loud is it at night?
+            <span class="faq-chevron">▾</span>
+          </summary>
+          <div class="faq-answer">
+            <p>The Claria operates very quietly — most patients compare it to a gentle hum, similar to a fish tank
+              filter. It also features an auto-dim screen so it won't light up your bedroom.</p>
+          </div>
+        </details>
+        <details class="faq-item" id="faq-pain">
+          <summary class="faq-question">
+            <span class="faq-icon">💉</span>
+            Does peritoneal dialysis hurt?
+            <span class="faq-chevron">▾</span>
+          </summary>
+          <div class="faq-answer">
+            <p>PD itself is painless. You may feel a sensation of fullness when the solution fills your abdomen, but
+              most patients get used to this quickly. <strong>There are no needles involved</strong> — the dialysate
+              flows through a soft catheter. The initial catheter placement surgery involves some recovery discomfort,
+              but this subsides within 1–2 weeks.</p>
+          </div>
+        </details>
+        <details class="faq-item" id="faq-infection">
+          <summary class="faq-question">
+            <span class="faq-icon">🦠</span>
+            What about infection risk?
+            <span class="faq-chevron">▾</span>
+          </summary>
+          <div class="faq-answer">
+            <p>The main risk is peritonitis (abdominal infection), but it's highly preventable with good hand hygiene
+              and sterile connection technique. Most experienced PD patients have 1 episode or fewer every 2–3 years. <a
+                href="/care-infection.html">Learn about infection prevention →</a></p>
+          </div>
+        </details>
+        <details class="faq-item" id="faq-travel">
+          <summary class="faq-question">
+            <span class="faq-icon">✈️</span>
+            Can I travel on PD?
+            <span class="faq-chevron">▾</span>
+          </summary>
+          <div class="faq-answer">
+            <p>Yes! Many patients travel domestically and internationally. Your supply company ships to your
+              destination. For CAPD, you don't even need the machine — just bags and tubing. <a
+                href="/learn-daily-life.html#travel">Read our travel guide →</a></p>
+          </div>
+        </details>
+        <details class="faq-item" id="faq-work">
+          <summary class="faq-question">
+            <span class="faq-icon">💼</span>
+            Can I work or study while on PD?
+            <span class="faq-chevron">▾</span>
+          </summary>
+          <div class="faq-answer">
+            <p>Absolutely. With APD, your treatment happens overnight while you sleep. Your days are completely free for
+              work, school, or anything else. Many patients report <strong>less disruption</strong> to their
+              professional life than hemodialysis patients. <a href="/learn-daily-life.html#work-social">See daily life
+                on PD →</a></p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Share / QR Section ─── -->
+  <section class="section share-section" id="share">
+    <div class="container">
+      <div class="share-card">
+        <div class="share-content">
+          <span class="section-tag">For Clinicians</span>
+          <h2 class="section-title">Share with Your Patient</h2>
+          <p>Generate a QR code or shareable link to send patients. They can explore the APD machine in AR and access
+            all educational content from home.</p>
+          <div class="share-actions">
+            <button class="btn btn-primary" id="generate-qr-btn">
+              <span class="btn-icon">📱</span>
+              Generate QR Code
+            </button>
+            <button class="btn btn-secondary" id="copy-link-btn">
+              <span class="btn-icon">🔗</span>
+              Copy Link
+            </button>
+          </div>
+          <div class="share-send-row" style="display:none;" id="share-send-row">
+            <a href="#" class="btn btn-outline" id="share-sms-btn">
+              <span class="btn-icon">💬</span> SMS
+            </a>
+            <a href="#" class="btn btn-outline" id="share-email-btn">
+              <span class="btn-icon">📧</span> Email
+            </a>
+          </div>
+        </div>
+        <div class="share-qr-area" id="qr-area">
+          <div class="qr-placeholder">
+            <div class="qr-placeholder-icon">📷</div>
+            <p>QR code will appear here</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Footer ─── -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <span class="logo-icon">🫘</span>
+          <span class="logo-text">Nephro<span class="logo-accent">View</span></span>
+          <p class="footer-tagline">Peritoneal Dialysis Education & AR Platform</p>
+        </div>
+        <div class="footer-links-grid">
+          <div class="footer-col">
+            <h4>Learn</h4>
+            <a href="/learn-ckd.html">Understanding CKD</a>
+            <a href="/learn-pd.html">What is PD?</a>
+            <a href="/learn-comparison.html">PD vs Hemodialysis</a>
+            <a href="/learn-daily-life.html">Life on PD</a>
+          </div>
+          <div class="footer-col">
+            <h4>Tools</h4>
+            <a href="/viewer.html">3D AR Viewer</a>
+            <a href="/capture-guide.html">Capture Guide</a>
+          </div>
+          <div class="footer-col">
+            <h4>Resources</h4>
+            <a href="https://www.kidney.org/atoz/content/peritoneal" target="_blank" rel="noopener">About PD (NKF)</a>
+            <a href="https://www.homedialysis.org" target="_blank" rel="noopener">Home Dialysis Central</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 NephroView. For educational purposes only. Not a medical device.</p>
+        <p class="footer-privacy">Your camera is only used for AR placement — no images are stored or transmitted.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { renderNavbar } from '/js/nav.js';
+    renderNavbar();
+  </script>
+  <script type="module" src="/js/main.js"></script>
+</body>
+
+</html>

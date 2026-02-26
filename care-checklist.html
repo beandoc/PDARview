@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="Daily self-assessment checklist for PD patients. Track weight, blood pressure, exit site status, and drain fluid clarity." />
+    <title>Daily Self-Assessment Checklist — NephroView</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <style>
+        .checklist-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+            margin-top: var(--space-xl);
+        }
+
+        .check-item {
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: var(--space-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            user-select: none;
+        }
+
+        .check-item:hover {
+            background: var(--bg-glass-hover);
+            border-color: var(--border-hover);
+        }
+
+        .check-item.done {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--text-muted);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all var(--transition-fast);
+        }
+
+        .check-item.done .checkbox {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .check-item.done .checkbox::after {
+            content: '✓';
+            color: white;
+            font-weight: 800;
+            font-size: 14px;
+        }
+
+        .check-text {
+            flex: 1;
+        }
+
+        .check-title {
+            display: block;
+            font-weight: 600;
+            font-size: var(--font-size-sm);
+        }
+
+        .check-desc {
+            display: block;
+            font-size: var(--font-size-xs);
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .check-item.done .check-title {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .checklist-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: var(--space-2xl);
+            padding-top: var(--space-xl);
+            border-top: 1px solid var(--border);
+        }
+
+        .progress-bar-outer {
+            height: 12px;
+            background: var(--bg-glass);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            margin-top: var(--space-xl);
+        }
+
+        .progress-bar-inner {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .status-text {
+            text-align: center;
+            font-size: var(--font-size-sm);
+            margin-top: var(--space-md);
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+
+<body class="care-page">
+    <nav class="navbar" id="navbar"></nav>
+
+    <section class="page-hero">
+        <div class="container">
+            <span class="hero-icon">✅</span>
+            <span class="section-tag">Daily Tracker</span>
+            <h1 class="section-title">Your Daily Self-Assessment</h1>
+            <p class="section-subtitle">Catch problems before they become emergencies. Go through this checklist every
+                morning after disconnecting from your cycler.</p>
+        </div>
+    </section>
+
+    <section class="content-section">
+        <div class="content-container">
+            <nav class="page-nav">
+                <a href="/">Home</a> <span>›</span> <a href="/care-checklist.html">Daily Checklist</a>
+            </nav>
+
+            <div class="learn-card">
+                <h2>📅 Morning Routine</h2>
+                <p>Take 5 minutes to check these vitals. If any "red flag" appears, call your nurse.</p>
+
+                <div class="progress-bar-outer">
+                    <div class="progress-bar-inner" id="progress-bar"></div>
+                </div>
+                <div class="status-text" id="status-text">0 of 6 tasks complete</div>
+
+                <div class="checklist-container" id="checklist">
+                    <div class="check-item" data-id="1">
+                        <div class="checkbox"></div>
+                        <div class="check-text">
+                            <span class="check-title">Weight Recorded</span>
+                            <span class="check-desc">Use the same scale, same time, wearing similar clothing. Report
+                                sudden gain (>1kg in 24h).</span>
+                        </div>
+                    </div>
+                    <div class="check-item" data-id="2">
+                        <div class="checkbox"></div>
+                        <div class="check-text">
+                            <span class="check-title">Blood Pressure Checked</span>
+                            <span class="check-desc">Sit quietly for 5 mins before testing. Report readings much higher
+                                or lower than your normal.</span>
+                        </div>
+                    </div>
+                    <div class="check-item" data-id="3">
+                        <div class="checkbox"></div>
+                        <div class="check-text">
+                            <span class="check-title">Drain Fluid Clarity</span>
+                            <span class="check-desc">Fluid should be clear/pale yellow. <strong>Red Flag:</strong>
+                                Cloudy or bloody fluid.</span>
+                        </div>
+                    </div>
+                    <div class="check-item" data-id="4">
+                        <div class="checkbox"></div>
+                        <div class="check-text">
+                            <span class="check-title">Exit Site Inspected</span>
+                            <span class="check-desc">Look for redness, swelling, or drainage. <strong>Red Flag:</strong>
+                                Pus or new pain.</span>
+                        </div>
+                    </div>
+                    <div class="check-item" data-id="5">
+                        <div class="checkbox"></div>
+                        <div class="check-text">
+                            <span class="check-title">Total UF Noted</span>
+                            <span class="check-desc">Check the cycler screen for Net Ultrafiltration. Record this in
+                                your logbook.</span>
+                        </div>
+                    </div>
+                    <div class="check-item" data-id="6">
+                        <div class="checkbox"></div>
+                        <div class="check-text">
+                            <span class="check-title">Fever/Chills Check</span>
+                            <span class="check-desc">Do you feel warm or shaky? Take your temperature if unsure.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="checklist-controls">
+                    <button class="btn btn-secondary" id="reset-btn">Reset Checklist</button>
+                    <a href="/guide-emergency.html" class="btn btn-outline" id="emergency-btn">Emergency Guide</a>
+                </div>
+            </div>
+
+            <div class="content-footer" id="success-message" style="display:none">
+                <h3>🎉 Great Job!</h3>
+                <p>You've completed your self-assessment for today. Staying consistent is key to a successful PD
+                    journey.</p>
+                <div class="btn-group">
+                    <a href="/care-diet.html" class="btn btn-primary"><span class="btn-icon">🥗</span> View Diet
+                        Guide</a>
+                    <a href="/viewer.html" class="btn btn-secondary"><span class="btn-icon">📱</span> Explore AR
+                        Machine</a>
+                </div>
+            </div>
+
+            <div class="medical-disclaimer">
+                ⚠️ This checklist is for your own tracking. Your clinic will provide an official logbook and monitoring
+                platform (like Sharesource). Always follow their recording instructions.
+            </div>
+
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>© 2026 NephroView. For educational purposes only.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { renderNavbar } from '/js/nav.js';
+        renderNavbar();
+
+        const checklist = document.getElementById('checklist');
+        const progressBar = document.getElementById('progress-bar');
+        const statusText = document.getElementById('status-text');
+        const resetBtn = document.getElementById('reset-btn');
+        const successMessage = document.getElementById('success-message');
+        const items = document.querySelectorAll('.check-item');
+
+        // Load state
+        const savedState = JSON.parse(localStorage.getItem('pdChecklistState') || '[]');
+        savedState.forEach(id => {
+            const item = document.querySelector(`.check-item[data-id="${id}"]`);
+            if (item) item.classList.add('done');
+        });
+        updateProgress();
+
+        // Click handler
+        checklist.addEventListener('click', (e) => {
+            const item = e.target.closest('.check-item');
+            if (!item) return;
+
+            item.classList.toggle('done');
+            saveState();
+            updateProgress();
+        });
+
+        // Reset handler
+        resetBtn.addEventListener('click', () => {
+            if (confirm('Clear all today\'s checks?')) {
+                items.forEach(item => item.classList.remove('done'));
+                saveState();
+                updateProgress();
+            }
+        });
+
+        function saveState() {
+            const doneIds = Array.from(document.querySelectorAll('.check-item.done'))
+                .map(item => item.dataset.id);
+            localStorage.setItem('pdChecklistState', JSON.stringify(doneIds));
+        }
+
+        function updateProgress() {
+            const total = items.length;
+            const done = document.querySelectorAll('.check-item.done').length;
+            const percentage = (done / total) * 100;
+
+            progressBar.style.width = `${percentage}%`;
+            statusText.innerText = `${done} of ${total} tasks complete`;
+
+            if (percentage === 100) {
+                successMessage.style.display = 'block';
+                successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                successMessage.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+
+</html>

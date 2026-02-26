@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="Explore your PD supply kit in 3D. Learn to identify solution bags, cassettes, and sterile caps used in peritoneal dialysis." />
+    <title>Supply Gallery — NephroView</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <style>
+        .gallery-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            min-height: 80vh;
+        }
+
+        .supply-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: var(--bg-glass);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .supply-item {
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .supply-item.active {
+            background: var(--primary-light);
+            border-color: var(--primary);
+        }
+
+        .supply-item-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-glass);
+            border-radius: 10px;
+        }
+
+        .supply-item-info h4 {
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .supply-item-info p {
+            margin: 2px 0 0;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .supply-display {
+            position: relative;
+            background: var(--bg-glass);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .display-viewer {
+            flex: 1;
+            width: 100%;
+            min-height: 400px;
+        }
+
+        .display-info {
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-top: 1px solid var(--border);
+        }
+
+        .display-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .display-title {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .sterile-badge {
+            background: var(--success);
+            color: white;
+            padding: 4px 12px;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        @media (max-width: 900px) {
+            .gallery-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .supply-list {
+                max-height: 300px;
+            }
+        }
+
+        /* Sterile Zone Overlays */
+        .no-touch-zone {
+            position: absolute;
+            pointer-events: none;
+            border: 2px solid #ff3e3e;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(255, 62, 62, 0.5);
+            animation: pulse-red 2s infinite;
+            display: none;
+        }
+
+        @keyframes pulse-red {
+            0% {
+                transform: scale(0.95);
+                opacity: 0.7;
+            }
+
+            50% {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0.95);
+                opacity: 0.7;
+            }
+        }
+    </style>
+</head>
+
+<body class="guide-content-page">
+    <nav class="navbar" id="navbar"></nav>
+
+    <section class="page-hero">
+        <div class="container">
+            <span class="hero-icon">🧴</span>
+            <span class="section-tag">Phase 3: Interactive 3D</span>
+            <h1 class="section-title">PD Supply Gallery</h1>
+            <p class="section-subtitle">Examine your treatment materials in 3D. Learn what's safe to touch and what must
+                stay sterile.</p>
+        </div>
+    </section>
+
+    <section class="content-section">
+        <div class="container">
+            <div class="gallery-layout">
+                <!-- Sidebar Selection -->
+                <aside class="supply-list" id="supply-list">
+                    <div class="supply-item active" data-id="bag">
+                        <div class="supply-item-icon">💧</div>
+                        <div class="supply-item-info">
+                            <h4>Dialysate Bag</h4>
+                            <p>2L / 2.5L glucose solution</p>
+                        </div>
+                    </div>
+                    <div class="supply-item" data-id="cassette">
+                        <div class="supply-item-icon">📦</div>
+                        <div class="supply-item-info">
+                            <h4>APD Cassette</h4>
+                            <p>Disposable pumping unit</p>
+                        </div>
+                    </div>
+                    <div class="supply-item" data-id="cap">
+                        <div class="supply-item-icon">🧴</div>
+                        <div class="supply-item-info">
+                            <h4>Minicap (Disconnect Cap)</h4>
+                            <p>Betadine-soaked sterile seal</p>
+                        </div>
+                    </div>
+                    <div class="supply-item" data-id="organizer">
+                        <div class="supply-item-icon">🖇️</div>
+                        <div class="supply-item-info">
+                            <h4>Tubing Organizer</h4>
+                            <p>Holds patient & drain lines</p>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Main Display -->
+                <main class="supply-display">
+                    <model-viewer id="supply-viewer" class="display-viewer"
+                        src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" ar
+                        ar-modes="webxr scene-viewer quick-look" camera-controls touch-action="pan-y"
+                        shadow-intensity="1" exposure="1" loading="eager" auto-rotate>
+
+                        <button slot="ar-button" class="ar-button" style="bottom: 2rem; right: 2rem;">
+                            View In 3D AR
+                        </button>
+
+                        <!-- Hotspots for "No Touch" Zones -->
+                        <button class="hotspot" slot="hotspot-sterile" data-position="0 1 0" data-normal="0 0 1"
+                            id="hotspot-sterile-zone">
+                            <div class="hotspot-dot" style="background: #ff3e3e;"></div>
+                            <div class="hotspot-label"
+                                style="background: rgba(255, 62, 62, 0.9); border-color: #ff3e3e;">
+                                <h4>🛑 STERILE ZONE</h4>
+                                <p>Never touch this area. Exposure to air or skin causes infection.</p>
+                            </div>
+                        </button>
+                    </model-viewer>
+
+                    <div class="display-info" id="display-info">
+                        <div class="display-header">
+                            <h2 class="display-title" id="title">Dialysate Bag</h2>
+                            <span class="sterile-badge">Sterile Inside</span>
+                        </div>
+                        <p id="description">The solution bag contains the dialysate fluid that filters your blood. Check
+                            the concentration (1.5%, 2.5%, or 4.25%) and the expiration date before use.</p>
+
+                        <div class="info-banner" style="margin-top: 1rem;">
+                            <span class="info-banner-icon">🧼</span>
+                            <p><strong>Clinical Value:</strong> You can rotate this bag to see where the pull-ring and
+                                injection ports are located without wasting an actual supply bag.</p>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>© 2026 NephroView. For educational purposes only.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { renderNavbar } from '/js/nav.js';
+        renderNavbar();
+
+        const supplies = {
+            bag: {
+                title: 'Dialysate Bag',
+                desc: "The solution bag contains the dialysate fluid that filters your blood. Check the concentration and the expiration date. The fluid must be clear—if it's cloudy or the bag leaks, do not use it.",
+                model: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb', // Placeholder
+                sterile: true
+            },
+            cassette: {
+                title: 'APD Cassette',
+                desc: 'The cassette is the heart of the pumping system. It snaps into the cycler door. The multi-colored lines connect to your bags and catheter.',
+                model: 'https://modelviewer.dev/shared-assets/models/Horse.glb', // Placeholder
+                sterile: true
+            },
+            cap: {
+                title: 'Minicap (Disconnect Cap)',
+                desc: 'This cap contains a small sponge soaked in betadine (iodine). It is used to seal your transfer set when you disconnect in the morning.',
+                model: 'https://modelviewer.dev/shared-assets/models/RobotExpressive.glb', // Placeholder
+                sterile: true
+            },
+            organizer: {
+                title: 'Tubing Organizer',
+                desc: 'Keeps your lines organized during setup. It clamps onto the machine or a table to prevent the tubes from falling on the floor.',
+                model: 'https://modelviewer.dev/shared-assets/models/Chair.glb', // Placeholder
+                sterile: false
+            }
+        };
+
+        const viewer = document.getElementById('supply-viewer');
+        const title = document.getElementById('title');
+        const desc = document.getElementById('description');
+        const list = document.getElementById('supply-list');
+        const sterileBadge = document.querySelector('.sterile-badge');
+
+        list.addEventListener('click', (e) => {
+            const item = e.target.closest('.supply-item');
+            if (!item) return;
+
+            // Update sidebar UI
+            document.querySelectorAll('.supply-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+
+            // Update Viewer
+            const data = supplies[item.dataset.id];
+            viewer.src = data.model;
+            title.innerText = data.title;
+            desc.innerText = data.desc;
+            sterileBadge.style.display = data.sterile ? 'block' : 'none';
+
+            // Update Hotspot (Simulate moving it to a relevant area)
+            const hotspot = document.getElementById('hotspot-sterile-zone');
+            hotspot.style.display = data.sterile ? 'block' : 'none';
+        });
+    </script>
+</body>
+
+</html>

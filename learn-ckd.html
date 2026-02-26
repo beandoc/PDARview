@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="Learn about Chronic Kidney Disease (CKD) — stages, eGFR, symptoms, and when dialysis becomes necessary. Patient-friendly guide." />
+  <title>Understanding CKD — NephroView</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+
+<body class="learn-page">
+  <nav class="navbar" id="navbar"></nav>
+
+  <!-- Page Hero -->
+  <section class="page-hero">
+    <div class="container">
+      <span class="hero-icon">🫘</span>
+      <span class="section-tag">Learn</span>
+      <h1 class="section-title">Understanding Chronic Kidney Disease</h1>
+      <p class="section-subtitle">Your kidneys are remarkable organs. Learn what happens when they need help — and what
+        you can do about it.</p>
+    </div>
+  </section>
+
+  <!-- Content -->
+  <section class="content-section">
+    <div class="content-container">
+
+      <nav class="page-nav">
+        <a href="/">Home</a> <span>›</span> <a href="/learn-ckd.html">Understanding CKD</a>
+      </nav>
+
+      <!-- What Do Kidneys Do? -->
+      <div class="learn-card" id="kidney-function">
+        <h2>🫘 What Do Your Kidneys Do?</h2>
+        <p>Your two kidneys — each about the size of your fist — work around the clock to keep your body in balance.
+          Think of them as your body's filtering system.</p>
+        <ul>
+          <li><strong>Filter waste</strong> — removing toxins, excess fluid, and metabolic byproducts from your blood
+          </li>
+          <li><strong>Balance electrolytes</strong> — keeping sodium, potassium, calcium, and phosphorus at safe levels
+          </li>
+          <li><strong>Regulate blood pressure</strong> — producing renin, a hormone that helps control blood pressure
+          </li>
+          <li><strong>Stimulate red blood cells</strong> — producing erythropoietin (EPO) to prevent anemia</li>
+          <li><strong>Activate vitamin D</strong> — helping your bones absorb calcium and stay strong</li>
+        </ul>
+        <p>Every day, your kidneys filter about <strong>150 litres of blood</strong> and produce 1–2 litres of urine.
+          When they lose function, these critical jobs go undone — that's CKD.</p>
+      </div>
+
+      <!-- What is CKD? -->
+      <div class="learn-card" id="what-is-ckd">
+        <h2>📋 What is Chronic Kidney Disease?</h2>
+        <p>CKD means your kidneys have been damaged and can't filter blood as well as they should.
+          <strong>"Chronic"</strong> means the damage has been present for more than 3 months and is usually
+          progressive.</p>
+
+        <h3>Common Causes</h3>
+        <ul>
+          <li><strong>Diabetes</strong> (Type 1 or Type 2) — the #1 cause worldwide</li>
+          <li><strong>High blood pressure</strong> (hypertension) — the #2 cause</li>
+          <li><strong>Glomerulonephritis</strong> — inflammation of the kidney's filtering units</li>
+          <li><strong>Polycystic kidney disease</strong> — inherited condition causing cysts</li>
+          <li><strong>Recurrent kidney infections</strong> or urinary obstructions</li>
+          <li><strong>Prolonged use of certain medications</strong> (NSAIDs, some antibiotics)</li>
+        </ul>
+
+        <div class="info-banner">
+          <span class="info-banner-icon">💡</span>
+          <p><strong>Early CKD often has no symptoms.</strong> Many people don't feel sick until their kidneys are
+            working at less than 15% of normal. That's why regular blood tests (eGFR) and urine tests (albumin) are so
+            important — they catch problems early.</p>
+        </div>
+      </div>
+
+      <!-- eGFR Explained -->
+      <div class="learn-card" id="egfr">
+        <h2>🔬 eGFR — Your Kidney Score</h2>
+        <p><strong>eGFR</strong> stands for <em>estimated Glomerular Filtration Rate</em>. It's a number that tells you
+          how well your kidneys are filtering. Think of it like a percentage score:</p>
+        <ul>
+          <li><strong>90+</strong> = kidneys working normally</li>
+          <li><strong>60–89</strong> = mildly reduced function</li>
+          <li><strong>30–59</strong> = moderately reduced</li>
+          <li><strong>15–29</strong> = severely reduced</li>
+          <li><strong>Below 15</strong> = kidney failure — dialysis or transplant may be needed</li>
+        </ul>
+        <p>Your eGFR is calculated from a simple blood test (serum creatinine), adjusted for your age, sex, and body
+          size. Ask your doctor for your latest eGFR number.</p>
+      </div>
+
+      <!-- The 5 Stages -->
+      <div class="learn-card" id="stages">
+        <h2>📊 The 5 Stages of CKD</h2>
+        <p>CKD is classified into 5 stages based on your eGFR. Tap any stage to learn more.</p>
+
+        <div class="stage-cards" id="stage-cards">
+          <div class="stage-card" data-severity="1" onclick="this.classList.toggle('expanded')">
+            <div class="stage-num">1</div>
+            <div class="stage-title">Normal or High</div>
+            <div class="stage-egfr">eGFR ≥ 90</div>
+            <div class="stage-detail">Kidney damage is present (protein in urine, structural abnormality) but filtration
+              is still normal. Focus: identify cause, control blood pressure, manage diabetes if applicable. Most people
+              feel completely well.</div>
+          </div>
+          <div class="stage-card" data-severity="2" onclick="this.classList.toggle('expanded')">
+            <div class="stage-num">2</div>
+            <div class="stage-title">Mildly Decreased</div>
+            <div class="stage-egfr">eGFR 60–89</div>
+            <div class="stage-detail">Mild loss of function. Usually no symptoms. Focus: lifestyle changes, blood
+              pressure control, regular monitoring. Avoid nephrotoxic drugs (ask your doctor before taking NSAIDs or
+              certain supplements).</div>
+          </div>
+          <div class="stage-card" data-severity="3" onclick="this.classList.toggle('expanded')">
+            <div class="stage-num">3</div>
+            <div class="stage-title">Moderate</div>
+            <div class="stage-egfr">eGFR 30–59</div>
+            <div class="stage-detail">Waste products begin to build up. You may notice fatigue, swelling in ankles,
+              changes in urination, or mild nausea. Focus: nephrology referral, dietary adjustments (phosphorus,
+              potassium), anaemia management.</div>
+          </div>
+          <div class="stage-card" data-severity="4" onclick="this.classList.toggle('expanded')">
+            <div class="stage-num">4</div>
+            <div class="stage-title">Severe</div>
+            <div class="stage-egfr">eGFR 15–29</div>
+            <div class="stage-detail">Significant loss of function. Symptoms may include persistent fatigue, poor
+              appetite, nausea, itching, and difficulty concentrating. Focus: begin planning for dialysis or transplant,
+              vascular access or catheter placement, patient education.</div>
+          </div>
+          <div class="stage-card" data-severity="5" onclick="this.classList.toggle('expanded')">
+            <div class="stage-num">5</div>
+            <div class="stage-title">Kidney Failure</div>
+            <div class="stage-egfr">eGFR &lt; 15</div>
+            <div class="stage-detail">Kidneys can no longer sustain life on their own. Dialysis or kidney transplant is
+              required. Symptoms: severe fatigue, breathlessness, nausea/vomiting, muscle cramps, itching, swelling.
+              Peritoneal dialysis is one of the treatment options at this stage.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- When is Dialysis Needed? -->
+      <div class="learn-card" id="dialysis-needed">
+        <h2>🏥 When Does Dialysis Become Necessary?</h2>
+        <p>Dialysis is typically needed when your kidneys are functioning at <strong>less than 10–15%</strong> (Stage 5
+          CKD) and you have symptoms of kidney failure that affect your quality of life.</p>
+
+        <h3>Signs That Dialysis May Be Approaching</h3>
+        <ul>
+          <li>Severe fatigue and weakness that doesn't improve with rest</li>
+          <li>Persistent nausea, vomiting, or loss of appetite</li>
+          <li>Fluid overload — swelling in legs, ankles, around eyes</li>
+          <li>Difficulty breathing, especially when lying flat</li>
+          <li>Dangerously high potassium levels (hyperkalaemia)</li>
+          <li>Metabolic acidosis that doesn't respond to medication</li>
+        </ul>
+
+        <div class="info-banner">
+          <span class="info-banner-icon">🎯</span>
+          <p><strong>Early planning is key.</strong> Starting dialysis preparation (like catheter placement for PD) 3–6
+            months before you need it gives your body time to heal and you time to train. Ask your nephrologist about <a
+              href="/learn-pd.html">peritoneal dialysis</a> — a home-based option that many patients prefer.</p>
+        </div>
+      </div>
+
+      <!-- What's Next -->
+      <div class="content-footer">
+        <h3>Ready to Learn About Your Treatment Options?</h3>
+        <p>If you or a family member has been told you may need dialysis, understanding your options is the first step
+          to feeling empowered.</p>
+        <div class="btn-group">
+          <a href="/learn-pd.html" class="btn btn-primary"><span class="btn-icon">💧</span> What is Peritoneal
+            Dialysis?</a>
+          <a href="/learn-comparison.html" class="btn btn-secondary"><span class="btn-icon">⚖️</span> PD vs
+            Hemodialysis</a>
+        </div>
+      </div>
+
+      <div class="medical-disclaimer">
+        ⚠️ This information is for educational purposes only and is not a substitute for professional medical advice.
+        Always consult your nephrologist or care team for guidance specific to your condition.
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>© 2026 NephroView. For educational purposes only. Not a medical device.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { renderNavbar } from '/js/nav.js';
+    renderNavbar();
+  </script>
+</body>
+
+</html>

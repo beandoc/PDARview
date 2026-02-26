@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="Interactive 3D guide to PD catheters. Learn about the Tenckhoff catheter, the tunnel, and how to grade your exit site health." />
+    <title>Catheter & Exit Site Guide — NephroView</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <style>
+        .grading-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .grading-controls {
+            background: var(--bg-glass);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+        }
+
+        .grading-slider-container {
+            margin: 2rem 0;
+        }
+
+        .grading-slider {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: linear-gradient(90deg, #10b981 0%, #f59e0b 50%, #ef4444 100%);
+            border-radius: var(--radius-full);
+            outline: none;
+        }
+
+        .grading-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border: 3px solid var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .grade-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .status-card {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            transition: all 0.3s ease;
+        }
+
+        .status-card.perfect {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+        }
+
+        .status-card.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid #f59e0b;
+        }
+
+        .status-card.danger {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+        }
+
+        .anatomy-viewer {
+            width: 100%;
+            height: 500px;
+            background: var(--bg-glass);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+        }
+
+        @media (max-width: 900px) {
+            .grading-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body class="guide-content-page">
+    <nav class="navbar" id="navbar"></nav>
+
+    <section class="page-hero">
+        <div class="container">
+            <span class="hero-icon">🩺</span>
+            <span class="section-tag">Anatomy & Grading</span>
+            <h1 class="section-title">Catheter & Exit Site Masterclass</h1>
+            <p class="section-subtitle">Understand your internal PD access and learn to identify clinical signs of
+                infection with our interactive 3D simulator.</p>
+        </div>
+    </section>
+
+    <section class="content-section">
+        <div class="container">
+            <!-- 3D Anatomy Section -->
+            <div class="learn-card">
+                <h2>🛠️ Part 1: Anatomy of a Tenckhoff Catheter</h2>
+                <p>A PD catheter isn't just a tube. It's a complex medical device designed to stay in your body for
+                    years.</p>
+                <model-viewer class="anatomy-viewer" src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+                    camera-controls auto-rotate shadow-intensity="1">
+                    <button class="hotspot" slot="hotspot-cuff" data-position="0 1.2 0" data-normal="0 0 1">
+                        <div class="hotspot-dot"></div>
+                        <div class="hotspot-label">
+                            <h4>Internal Cuff</h4>
+                            <p>A small polyester felt ring that lets your tissue grow into it, anchoring the tube and
+                                blocking bacteria.</p>
+                        </div>
+                    </button>
+                    <button class="hotspot" slot="hotspot-tip" data-position="0 0.2 0" data-normal="0 0 1">
+                        <div class="hotspot-dot"></div>
+                        <div class="hotspot-label">
+                            <h4>Coiled Tip</h4>
+                            <p>The part inside your peritoneum. The coils help the dialysate flow smoothly and prevent
+                                pain during fill/drain.</p>
+                        </div>
+                    </button>
+                </model-viewer>
+            </div>
+
+            <!-- Interactive Grading Simulator -->
+            <div class="learn-card" style="margin-top: 3rem;">
+                <h2>🚦 Part 2: Interactive Exit Site Grading</h2>
+                <p>Clinicians use a 0-3 grading scale for exit sites. Practice identifying different states using the
+                    simulator below.</p>
+
+                <div class="grading-layout">
+                    <div class="grading-controls">
+                        <h3>Diagnostic Simulator</h3>
+                        <p class="text-muted">Drag the slider to see how an exit site changes from healthy to infected.
+                        </p>
+
+                        <div class="grading-slider-container">
+                            <input type="range" min="0" max="3" step="1" value="0" class="grading-slider"
+                                id="grading-slider">
+                            <div class="grade-labels">
+                                <span>HEALTHY</span>
+                                <span>CRUSTING</span>
+                                <span>INFECTED</span>
+                            </div>
+                        </div>
+
+                        <div id="status-card" class="status-card perfect">
+                            <h4 id="status-title">Grade 0: Perfectly Healed</h4>
+                            <p id="status-desc">Skin is normal color, firm, and pain-free. No drainage is present. This
+                                is our daily goal!</p>
+                            <ul id="status-tips" style="margin-top: 1rem; font-size: 0.85rem;">
+                                <li>Wash with soap & water only.</li>
+                                <li>Keep dry and secured.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="visual-reference">
+                        <!-- In Phase 3 with splats, this would be a model-viewer loading a different splat for each state -->
+                        <div id="visual-placeholder"
+                            style="width:100%; height:100%; min-height:300px; background: #f8fafc; border-radius:15px; display:flex; flex-direction:column; align-items:center; justify-content:center; border: 2px dashed #cbd5e1; position:relative; overflow:hidden;">
+                            <div id="skin-sim"
+                                style="width: 120px; height: 120px; background: #ffd9c4; border-radius: 50%; box-shadow: inset 0 0 20px rgba(0,0,0,0.1); position:relative;">
+                                <div id="tube-sim"
+                                    style="width: 20px; height: 100px; background: #e2e8f0; border-radius: 10px; position:absolute; top: -40px; left: 50px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);">
+                                </div>
+                                <div id="redness-sim"
+                                    style="width: 0px; height: 0px; background: rgba(239, 68, 68, 0.4); border-radius: 50%; position:absolute; top: 60px; left: 60px; transform: translate(-50%, -50%); transition: all 0.5s ease; filter: blur(10px);">
+                                </div>
+                                <div id="drainage-sim"
+                                    style="width: 0px; height: 0px; background: #fbbf24; border-radius: 50%; position:absolute; top: 60px; left: 60px; transform: translate(-50%, -50%); transition: all 0.5s ease; filter: blur(5px);">
+                                </div>
+                            </div>
+                            <p
+                                style="margin-top: 2rem; font-weight: 700; color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;">
+                                Visual Simulation</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-footer">
+                <h3>Master Your Self-Care</h3>
+                <p>Combining 3D understanding with daily monitoring is your secret to long-term PD success.</p>
+                <div class="btn-group">
+                    <a href="/care-exit-site.html" class="btn btn-primary"><span class="btn-icon">🩹</span> Daily
+                        Cleaning Steps</a>
+                    <a href="/care-checklist.html" class="btn btn-secondary"><span class="btn-icon">✅</span> Daily
+                        Checklist</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script type="module">
+        import { renderNavbar } from '/js/nav.js';
+        renderNavbar();
+
+        const slider = document.getElementById('grading-slider');
+        const title = document.getElementById('status-title');
+        const desc = document.getElementById('status-desc');
+        const card = document.getElementById('status-card');
+        const tips = document.getElementById('status-tips');
+
+        // Simulation elements
+        const redness = document.getElementById('redness-sim');
+        const drainage = document.getElementById('drainage-sim');
+
+        const grades = [
+            {
+                title: 'Grade 0: Perfectly Healed',
+                desc: 'Skin is normal color, firm, and pain-free. No drainage is present. This is exactly what we want to see.',
+                class: 'perfect',
+                tips: ['Wash with soap & water daily.', 'Always secure with a stress loop.'],
+                redSize: 0,
+                drainSize: 0
+            },
+            {
+                title: 'Grade 1: Minor Crusting',
+                desc: 'Dry, crusty material (scabs) may be present. This is common and usually not an infection, but needs careful cleaning.',
+                class: 'warning',
+                tips: ['Soak crusts with saline to remove gently.', 'Do not pick at dry crusts with fingernails.'],
+                redSize: 40,
+                drainSize: 0
+            },
+            {
+                title: 'Grade 2: Early Inflammation',
+                desc: 'Skin is becoming pink/red and may feel slightly warm or tender. This is a warning sign.',
+                class: 'warning',
+                tips: ['Call your PD nurse for advice.', 'Increase cleaning to twice a day if instructed.'],
+                redSize: 70,
+                drainSize: 15
+            },
+            {
+                title: 'Grade 3: FULL INFECTION',
+                desc: 'Pus (yellow/green fluid) is leaking from the site. Skin is deep red, swollen, and painful. Peritonitis risk is HIGH.',
+                class: 'danger',
+                tips: ['CALL CLINIC IMMEDIATELY.', 'Do not wait. Early antibiotics save your catheter.'],
+                redSize: 110,
+                drainSize: 40
+            }
+        ];
+
+        slider.addEventListener('input', () => {
+            const g = grades[slider.value];
+            title.innerText = g.title;
+            desc.innerText = g.desc;
+            card.className = `status-card ${g.class}`;
+            tips.innerHTML = g.tips.map(t => `<li>${t}</li>`).join('');
+
+            // Update visual sim
+            redness.style.width = `${g.redSize}px`;
+            redness.style.height = `${g.redSize}px`;
+            drainage.style.width = `${g.drainSize}px`;
+            drainage.style.height = `${g.drainSize}px`;
+        });
+    </script>
+</body>
+
+</html>

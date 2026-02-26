@@ -1,6 +1,10 @@
 {
   "name": "pd-ar-viewer",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/beandoc/PDARview.git"
+  },
   "version": "0.0.0",
   "type": "module",
   "scripts": {

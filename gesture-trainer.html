@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Immersive 3D Gesture Trainer — NephroView</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0d0d0d;
+            font-family: 'Inter', sans-serif;
+            color: white;
+        }
+
+        #gesture-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ─── HUD Overlays ─── */
+        .hud-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .hud-top-left {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .gesture-badge {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .gesture-badge.active {
+            background: rgba(79, 172, 254, 0.2);
+            border-color: rgba(79, 172, 254, 0.5);
+            box-shadow: 0 0 20px rgba(79, 172, 254, 0.3);
+        }
+
+        /* ─── Webcam Preview ─── */
+        .webcam-container {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: #000;
+            z-index: 20;
+            pointer-events: auto;
+            transform: scaleX(-1);
+            /* Mirror view */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        #webcam-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* ─── Landing Overlay ─── */
+        #landing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #0d0d0d 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            text-align: center;
+            transition: opacity 1s ease, visibility 1s;
+        }
+
+        #landing-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .hero-badge {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #4facfe;
+            margin-bottom: 24px;
+        }
+
+        .landing-title {
+            font-size: clamp(32px, 5vw, 64px);
+            font-weight: 800;
+            margin: 0 0 16px 0;
+            background: linear-gradient(135deg, #fff 0%, #aaa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .landing-subtitle {
+            font-size: 18px;
+            color: #888;
+            max-width: 600px;
+            margin-bottom: 48px;
+            line-height: 1.6;
+        }
+
+        .btn-start {
+            background: white;
+            color: black;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-start:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-start:active {
+            transform: scale(0.98);
+        }
+
+        .gesture-guide {
+            display: flex;
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .guide-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .guide-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        /* ─── Back Button ─── */
+        .back-btn {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* ─── Info Sidebar ─── */
+        #info-sidebar {
+            position: absolute;
+            right: -400px;
+            top: 100px;
+            width: 320px;
+            background: rgba(20, 20, 20, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: none;
+            padding: 30px;
+            border-radius: 24px 0 0 24px;
+            transition: right 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+            pointer-events: auto;
+        }
+
+        #info-sidebar.active {
+            right: 0;
+        }
+
+        .info-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #4facfe;
+        }
+
+        .info-desc {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #ccc;
+        }
+
+        .info-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            cursor: pointer;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="landing-overlay">
+        <div class="hero-badge">Next-Gen Patient Education</div>
+        <h1 class="landing-title">Immersive 3D Trainer</h1>
+        <p class="landing-subtitle">
+            Explore the Vantive HomeChoice Claria APD cycler using high-precision hand tracking.
+            No mouse. No touch. Just your hands.
+        </p>
+        <button class="btn-start" id="start-btn">
+            Start Experience 🖐️
+        </button>
+
+        <div class="gesture-guide">
+            <div class="guide-item">
+                <span class="guide-icon">✋</span>
+                <span>Rotate View</span>
+            </div>
+            <div class="guide-item">
+                <span class="guide-icon">🤏</span>
+                <span>Zoom In/Out</span>
+            </div>
+            <div class="guide-item">
+                <span class="guide-icon">👆</span>
+                <span>Select Part</span>
+            </div>
+            <div class="guide-item">
+                <span class="guide-icon">✊</span>
+                <span>Pause</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="hud-container">
+        <div class="hud-top-left">
+            <div id="gesture-rotate" class="gesture-badge">
+                <span>✋</span> Rotate
+            </div>
+            <div id="gesture-zoom" class="gesture-badge">
+                <span>🤏</span> Zoom
+            </div>
+            <div id="gesture-point" class="gesture-badge">
+                <span>👆</span> Point
+            </div>
+        </div>
+
+        <div class="back-btn" onclick="window.location.href='/'">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </div>
+
+        <div id="info-sidebar">
+            <div class="info-close" id="info-close">✕</div>
+            <h3 class="info-title" id="info-title">Component Name</h3>
+            <p class="info-desc" id="info-desc">Component description goes here.</p>
+        </div>
+    </div>
+
+    <div class="webcam-container">
+        <video id="webcam-video" autoplay playsinline></video>
+    </div>
+
+    <canvas id="gesture-canvas"></canvas>
+
+    <script type="module" src="/js/gesture-trainer.js"></script>
+</body>
+
+</html>

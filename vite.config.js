@@ -23,6 +23,7 @@ export default defineConfig({
                 'supply-gallery': resolve(__dirname, 'supply-gallery.html'),
                 'supply-storage': resolve(__dirname, 'supply-storage.html'),
                 'catheter-guide': resolve(__dirname, 'catheter-guide.html'),
+                'gesture-trainer': resolve(__dirname, 'gesture-trainer.html'),
             },
         },
     },

@@ -111,6 +111,10 @@ export function renderNavbar() {
               <span class="dd-icon">🩺</span>
               <div><strong>Catheter Guide</strong><small>Exit site anatomy</small></div>
             </a>
+            <a href="/gesture-trainer.html" class="dd-link">
+              <span class="dd-icon">🖐️</span>
+              <div><strong>Gesture Trainer</strong><small>Hand-controlled 3D tour</small></div>
+            </a>
           </div>
         </div>
 

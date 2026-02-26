@@ -195,9 +195,10 @@
                 <!-- Viewer Area -->
                 <main class="viewer-area">
                     <model-viewer id="storage-viewer" class="storage-viewer"
-                        src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" ar
-                        ar-modes="webxr scene-viewer quick-look" ar-scale="fixed" camera-controls touch-action="pan-y"
-                        shadow-intensity="1" exposure="1" environment-image="neutral">
+                        src="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Box/glTF-Binary/Box.glb"
+                        ar ar-modes="webxr scene-viewer quick-look" ar-scale="fixed" ar-placement="floor"
+                        camera-controls touch-action="pan-y" shadow-intensity="2" exposure="1"
+                        environment-image="neutral" base-color="#c6a664">
 
                         <button slot="ar-button" class="ar-button" style="bottom: 80px;">
                             View Stack In Your Room
@@ -337,9 +338,11 @@
             calcHeight.innerText = `${height.toFixed(2)} m`;
             calcWeight.innerText = `${(count * BOX_KG).toFixed(0)} kg`;
 
-            // In a real implementation, we would switch models/parameters
-            // For this demo, we can change the scale of a basic cube model if we had one
-            console.log(`Plan updated: ${count} boxes in ${strategy} config.`);
+            // Dynamically scale the box to represent the total stack size in AR
+            // We use a string "X Y Z" for the model-viewer scale attribute
+            viewer.scale = `${width} ${height} ${depth}`;
+
+            console.log(`Plan updated: ${count} boxes in ${strategy} config. Total dimensions: ${width.toFixed(2)}m W x ${height.toFixed(2)}m H x ${depth.toFixed(2)}m D`);
         }
 
         slider.addEventListener('input', updateCalculations);

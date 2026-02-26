@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export class APDScene {
     constructor(canvas) {
@@ -49,30 +50,13 @@ export class APDScene {
         ground.receiveShadow = true;
         this.scene.add(ground);
 
-        // 5. APD Cycler Proxy Box (Vantive Specs)
-        // 46.7cm W x 19.4cm H x 38.7cm D
-        const group = new THREE.Group();
-        this.modelGroup = group;
-        this.scene.add(group);
+        // 5. APD Cycler / Machine Group
+        this.modelGroup = new THREE.Group();
+        this.scene.add(this.modelGroup);
 
-        const boxGeo = new THREE.BoxGeometry(0.467, 0.194, 0.387);
-        const boxMat = new THREE.MeshStandardMaterial({
-            color: 0x222222,
-            metalness: 0.6,
-            roughness: 0.2,
-            emissive: 0x4facfe,
-            emissiveIntensity: 0.05
-        });
-        const box = new THREE.Mesh(boxGeo, boxMat);
-        box.castShadow = true;
-        group.add(box);
-
-        // 6. Add "Screen" highlight
-        const screenGeo = new THREE.PlaneGeometry(0.3, 0.1);
-        const screenMat = new THREE.MeshStandardMaterial({ color: 0x000, emissive: 0x4facfe, emissiveIntensity: 0.2 });
-        const screen = new THREE.Mesh(screenGeo, screenMat);
-        screen.position.set(0, 0.02, 0.195);
-        group.add(screen);
+        // 6. Model Loader
+        this.loader = new GLTFLoader();
+        this.loadModel();
 
         // 7. Hotspots
         this.addHotspot(0, 0.05, 0.2, "Display Screen", "High-contrast LCD that shows treatment status and alarms. It auto-dims at night.");
@@ -86,6 +70,36 @@ export class APDScene {
             this.camera.updateProjectionMatrix();
             this.renderer.setSize(window.innerWidth, window.innerHeight);
         });
+    }
+
+    loadModel() {
+        // For now, we use a high-fidelity proxy box. 
+        // Later, replace this with your .glb path: this.loader.load('/models/dialysis.glb', ...)
+
+        const boxGeo = new THREE.BoxGeometry(0.467, 0.194, 0.387);
+        const boxMat = new THREE.MeshStandardMaterial({
+            color: 0x222222,
+            metalness: 0.8,
+            roughness: 0.1,
+            emissive: 0x4facfe,
+            emissiveIntensity: 0.05
+        });
+        const box = new THREE.Mesh(boxGeo, boxMat);
+        box.castShadow = true;
+        this.modelGroup.add(box);
+
+        // Add a "Screen" panel to the proxy
+        const screenGeo = new THREE.PlaneGeometry(0.3, 0.1);
+        const screenMat = new THREE.MeshStandardMaterial({
+            color: 0x000,
+            emissive: 0x4facfe,
+            emissiveIntensity: 0.4
+        });
+        const screen = new THREE.Mesh(screenGeo, screenMat);
+        screen.position.set(0, 0.02, 0.195);
+        this.modelGroup.add(screen);
+
+        console.log("Scene initialized with high-fidelity proxy. Ready for .glb swap.");
     }
 
     addHotspot(x, y, z, title, description) {

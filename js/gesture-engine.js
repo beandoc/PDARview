@@ -79,26 +79,64 @@ export class GestureEngine {
 
     // 🧼 SCRUB: Detect two hands overlapping and moving (WHO protocol)
     detectScrubbing(allLandmarks) {
-        const h1 = allLandmarks[0][9]; // Palm center hand 1
-        const h2 = allLandmarks[1][9]; // Palm center hand 2
+        const h1 = allLandmarks[0];
+        const h2 = allLandmarks[1];
+
+        const center1 = h1[9]; // Palm center hand 1
+        const center2 = h2[9]; // Palm center hand 2
 
         // Distance between palms
-        const dist = Math.hypot(h1.x - h2.x, h1.y - h2.y);
+        const dist = Math.hypot(center1.x - center2.x, center1.y - center2.y);
 
         // Velocity check: Is there motion?
         let isMoving = false;
         if (this.lastHandPos[0] && this.lastHandPos[1]) {
-            const v1 = Math.hypot(h1.x - this.lastHandPos[0].x, h1.y - this.lastHandPos[0].y);
-            const v2 = Math.hypot(h2.x - this.lastHandPos[1].x, h2.y - this.lastHandPos[1].y);
+            const v1 = Math.hypot(center1.x - this.lastHandPos[0].x, center1.y - this.lastHandPos[0].y);
+            const v2 = Math.hypot(center2.x - this.lastHandPos[1].x, center2.y - this.lastHandPos[1].y);
             if (v1 > 0.005 || v2 > 0.005) isMoving = true;
         }
 
-        // Scrubbing is detected if hands are close and moving
+        // Broad scrubbing detection
         if (dist < 0.15 && isMoving) {
             this.emit('scrub', { intensity: 1 - (dist / 0.15) });
+
+            // WHO Specific Step Classification
+            const stepId = this.classifyScrubStep(h1, h2);
+            if (stepId) {
+                this.emit('scrub_step', { step: stepId });
+            }
         }
 
-        this.lastHandPos = [h1, h2];
+        this.lastHandPos = [center1, center2];
+    }
+
+    // 🔬 Classify specific WHO motions based on landmark geometry
+    classifyScrubStep(h1, h2) {
+        // Step 2/3: Interlacing Fingers
+        // If the tips of the index/middle intersect the plane of the other hand
+        const interlacingDist = Math.hypot(h1[8].x - h2[8].x, h1[8].y - h2[8].y);
+
+        // Step 6: Thumb Rubbing
+        // If thumb of h1 is completely over the palm of h2 (or vice versa)
+        const thumb1ToPalm2 = Math.hypot(h1[4].x - h2[9].x, h1[4].y - h2[9].y);
+        const thumb2ToPalm1 = Math.hypot(h2[4].x - h1[9].x, h2[4].y - h1[9].y);
+
+        // Step 7: Fingertips in Palm
+        // If clustered fingertips of h1 are over the palm of h2
+        const clusteredFingersDist = Math.hypot(h1[8].x - h1[12].x, h1[8].y - h1[12].y);
+        const tips1ToPalm2 = Math.hypot(h1[8].x - h2[9].x, h1[8].y - h2[9].y);
+
+        if (thumb1ToPalm2 < 0.05 || thumb2ToPalm1 < 0.05) {
+            return 'thumbs';
+        }
+        else if (clusteredFingersDist < 0.03 && tips1ToPalm2 < 0.05) {
+            return 'fingertips';
+        }
+        else if (interlacingDist < 0.08) {
+            return 'interlace';
+        }
+
+        return 'palm';
     }
 
     // ✋ ROTATE: Follow palm movements

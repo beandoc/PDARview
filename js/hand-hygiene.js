@@ -7,6 +7,7 @@ class HygieneAuditor {
         this.totalDuration = 60;
         this.isActive = false;
         this.isScrubbing = false;
+        this.currentScrubMotion = null;
         this.currentStep = 1;
 
         // UI Elements
@@ -80,20 +81,48 @@ class HygieneAuditor {
     }
 
     bindEvents() {
-        // Scrubbing detected
+        // Broad Scrubbing detected
         this.engine.on('scrub', (data) => {
             this.isScrubbing = true;
             this.statusDot.classList.add('active');
-            this.statusText.innerText = 'ACTIVE SCRUBBING';
-            this.feedbackTxt.innerText = 'Good progress! Intensity: ' + Math.round(data.intensity * 100) + '%';
+
+            // Check if they are doing the right motion for the current step
+            let motionValid = false;
+            let statusMessage = 'ACTIVE SCRUBBING';
+
+            if (this.currentStep === 1 && this.currentScrubMotion === 'palm') motionValid = true;
+            else if (this.currentStep === 2 && this.currentScrubMotion === 'interlace') motionValid = true;
+            else if (this.currentStep === 3 && (this.currentScrubMotion === 'thumbs' || this.currentScrubMotion === 'fingertips')) motionValid = true;
+            else if (this.currentStep === 4) motionValid = true; // Any motion is fine for final rinse/dry
+
+            if (!motionValid && this.currentStep !== 4) {
+                statusMessage = 'INCORRECT MOTION';
+                this.statusDot.style.background = '#ffaa00'; // Warning color
+                this.feedbackTxt.innerText = `Please check step ${this.currentStep} instructions.`;
+            } else {
+                this.statusDot.style.background = '';
+                this.feedbackTxt.innerText = 'Good progress! Keep going.';
+            }
+
+            this.statusText.innerText = statusMessage;
+
+            // Only consider it valid scrubbing if the motion is correct
+            this.isScrubbing = motionValid || this.currentStep === 4;
+        });
+
+        // Granular Step detected
+        this.engine.on('scrub_step', (data) => {
+            this.currentScrubMotion = data.step;
         });
 
         // Hands lost or idle
         this.engine.on('idle', () => {
             this.isScrubbing = false;
+            this.currentScrubMotion = null;
             this.statusDot.classList.remove('active');
-            this.statusText.innerText = 'NO SCRUBBING DETECTED';
-            this.feedbackTxt.innerText = 'Please resume scrubbing to continue timer';
+            this.statusDot.style.background = '';
+            this.statusText.innerText = 'WAITING FOR MOTION';
+            this.feedbackTxt.innerText = 'Please resume step instructions to continue timer';
         });
     }
 

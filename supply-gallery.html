@@ -208,7 +208,7 @@
                 <main class="supply-display">
                     <model-viewer id="supply-viewer" class="display-viewer"
                         src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" ar
-                        ar-modes="webxr scene-viewer quick-look" camera-controls touch-action="pan-y"
+                        ar-modes="scene-viewer webxr quick-look" camera-controls touch-action="pan-y"
                         shadow-intensity="1" exposure="1" loading="eager" auto-rotate>
 
                         <button slot="ar-button" class="ar-button" style="bottom: 2rem; right: 2rem;">
@@ -255,6 +255,7 @@
     </footer>
 
     <script type="module">
+        import '@google/model-viewer';
         import { renderNavbar } from '/js/nav.js';
         renderNavbar();
 

@@ -35,6 +35,7 @@
             width: 100%;
             height: 8px;
             -webkit-appearance: none;
+            appearance: none;
             background: linear-gradient(90deg, #10b981 0%, #f59e0b 50%, #ef4444 100%);
             border-radius: var(--radius-full);
             outline: none;
@@ -118,8 +119,8 @@
                 <h2>🛠️ Part 1: Anatomy of a Tenckhoff Catheter</h2>
                 <p>A PD catheter isn't just a tube. It's a complex medical device designed to stay in your body for
                     years.</p>
-                <model-viewer class="anatomy-viewer" src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
-                    camera-controls auto-rotate shadow-intensity="1">
+                <model-viewer class="anatomy-viewer" src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" ar
+                    ar-modes="scene-viewer webxr quick-look" camera-controls auto-rotate shadow-intensity="1">
                     <button class="hotspot" slot="hotspot-cuff" data-position="0 1.2 0" data-normal="0 0 1">
                         <div class="hotspot-dot"></div>
                         <div class="hotspot-label">
@@ -210,6 +211,7 @@
     </section>
 
     <script type="module">
+        import '@google/model-viewer';
         import { renderNavbar } from '/js/nav.js';
         renderNavbar();
 

@@ -234,7 +234,7 @@
                 <main class="viewer-area">
                     <model-viewer id="storage-viewer" class="storage-viewer"
                         src="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Box/glTF-Binary/Box.glb"
-                        ar ar-modes="webxr scene-viewer quick-look" ar-scale="fixed" ar-placement="floor"
+                        ar ar-modes="scene-viewer webxr quick-look" ar-scale="fixed" ar-placement="floor"
                         camera-controls touch-action="pan-y" shadow-intensity="2" exposure="1"
                         environment-image="neutral" base-color="#c6a664">
 
@@ -324,6 +324,7 @@
     </footer>
 
     <script type="module">
+        import '@google/model-viewer';
         import { renderNavbar } from '/js/nav.js';
         renderNavbar();
 
@@ -393,6 +394,12 @@
                 strategy = btn.dataset.type;
                 updateCalculations();
             });
+        });
+
+        viewer.addEventListener('ar-status', (event) => {
+            if (event.detail.status === 'failed') {
+                alert('Unable to open AR. Please ensure your browser supports WebXR/AR and you have granted camera permissions.');
+            }
         });
 
         updateCalculations();

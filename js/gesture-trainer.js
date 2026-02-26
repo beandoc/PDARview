@@ -52,7 +52,7 @@ class GestureTrainer {
         try {
             // 1. Start Webcam
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: { width: 640, height: 480 }
+                video: { width: 640, height: 480, facingMode: 'user' }
             });
             this.webcamElement.srcObject = stream;
 

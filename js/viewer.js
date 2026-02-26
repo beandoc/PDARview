@@ -121,9 +121,11 @@ viewer?.addEventListener('progress', (e) => {
     }
 });
 
-// ─── AR Status ───
 viewer?.addEventListener('ar-status', (e) => {
     console.log('AR Status:', e.detail.status);
+    if (e.detail.status === 'failed') {
+        alert('Unable to open AR. Please ensure your browser supports WebXR/AR and you have granted camera permissions.');
+    }
 });
 
 // ─── Guided Tour (Phase 3) ───

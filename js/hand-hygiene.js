@@ -59,7 +59,7 @@ class HygieneAuditor {
         try {
             // Start Camera
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: { width: 640, height: 480 }
+                video: { width: 640, height: 480, facingMode: 'user' }
             });
             this.video.srcObject = stream;
 

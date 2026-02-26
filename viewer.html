@@ -22,12 +22,12 @@
     <main class="viewer-main">
         <!-- Model Viewer -->
         <div class="viewer-wrapper" id="viewer-wrapper">
-            <model-viewer id="apd-viewer" src="https://modelviewer.dev/shared-assets/models/NeilArmstrong.glb"
-                ios-src="" ar ar-modes="webxr scene-viewer quick-look" ar-scale="fixed" camera-controls
-                touch-action="pan-y" shadow-intensity="1.2" shadow-softness="0.8" exposure="1"
-                environment-image="neutral"
-                alt="Vantive HomeChoice Claria APD Machine — Automated Peritoneal Dialysis Cycler"
-                camera-orbit="45deg 65deg 2.5m" min-camera-orbit="auto auto 1m" max-camera-orbit="auto auto 5m"
+            <model-viewer id="apd-viewer"
+                src="https://modelviewer.dev/shared-assets/models/glTF-Sample-Models/2.0/Box/glTF-Binary/Box.glb"
+                scale="0.467 0.194 0.387" ios-src="" ar ar-modes="webxr scene-viewer quick-look" ar-scale="fixed"
+                camera-controls touch-action="pan-y" shadow-intensity="1.2" shadow-softness="0.8" exposure="1"
+                environment-image="neutral" alt="Vantive HomeChoice Claria APD Machine — Dimensional Proxy Box"
+                camera-orbit="45deg 65deg 1.5m" min-camera-orbit="auto auto 0.5m" max-camera-orbit="auto auto 5m"
                 field-of-view="30deg" interaction-prompt="auto" loading="eager">
                 <!-- ─── AR Button ─── -->
                 <button slot="ar-button" class="ar-button" id="ar-button">
@@ -41,7 +41,7 @@
                 </button>
 
                 <!-- ─── Interactive Hotspots ─── -->
-                <button class="hotspot" slot="hotspot-screen" data-position="0 0.15 0.1" data-normal="0 0 1"
+                <button class="hotspot" slot="hotspot-screen" data-position="0 0.09 0.19" data-normal="0 0 1"
                     data-visibility-attribute="visible" id="hotspot-screen">
                     <div class="hotspot-dot"></div>
                     <div class="hotspot-label" id="label-screen">
@@ -51,7 +51,7 @@
                     </div>
                 </button>
 
-                <button class="hotspot" slot="hotspot-cassette" data-position="-0.2 0 0.15" data-normal="0 0 1"
+                <button class="hotspot" slot="hotspot-cassette" data-position="-0.15 0.05 0.19" data-normal="0 0 1"
                     data-visibility-attribute="visible" id="hotspot-cassette">
                     <div class="hotspot-dot"></div>
                     <div class="hotspot-label" id="label-cassette">
@@ -62,7 +62,7 @@
                     </div>
                 </button>
 
-                <button class="hotspot" slot="hotspot-power" data-position="0.25 -0.05 -0.15" data-normal="1 0 0"
+                <button class="hotspot" slot="hotspot-power" data-position="0.23 0 -0.1" data-normal="1 0 0"
                     data-visibility-attribute="visible" id="hotspot-power">
                     <div class="hotspot-dot"></div>
                     <div class="hotspot-label" id="label-power">
@@ -73,7 +73,7 @@
                     </div>
                 </button>
 
-                <button class="hotspot" slot="hotspot-drain" data-position="0.2 -0.1 0.15" data-normal="0 0 1"
+                <button class="hotspot" slot="hotspot-drain" data-position="0.15 -0.05 0.19" data-normal="0 0 1"
                     data-visibility-attribute="visible" id="hotspot-drain">
                     <div class="hotspot-dot"></div>
                     <div class="hotspot-label" id="label-drain">

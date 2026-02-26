@@ -9,14 +9,17 @@ class HygieneAuditor {
         this.isScrubbing = false;
         this.currentScrubMotion = null;
         this.currentStep = 1;
+        this.lastHeartbeat = 0; // Prevent runaway timer if engine crashes
+        this.lastHeartbeat = 0; // Prevent runaway timer
 
         // UI Elements
         this.timerEl = document.getElementById('timer-val');
         this.progressEl = document.getElementById('timer-progress');
         this.statusDot = document.getElementById('status-dot');
         this.statusText = document.getElementById('status-text');
-        this.feedbackTxt = document.getElementById('feedback-txt');
         this.video = document.getElementById('webcam-video');
+        this.overlay = document.getElementById('gesture-overlay');
+        this.ctx = this.overlay.getContext('2d');
 
         this.init();
     }
@@ -81,33 +84,37 @@ class HygieneAuditor {
     }
 
     bindEvents() {
-        // Broad Scrubbing detected
-        this.engine.on('scrub', (data) => {
-            this.isScrubbing = true;
-            this.statusDot.classList.add('active');
+        // Skeletal Rendering Logic - Mirroring fixed here
+        this.engine.on('draw', (data) => {
+            this.lastHeartbeat = Date.now();
+            this.drawMesh(data.landmarks);
+        });
 
-            // Check if they are doing the right motion for the current step
+        // 🚨 Broad Scrubbing detected
+        this.engine.on('scrub', (data) => {
+            this.lastHeartbeat = Date.now();
+            // ... (rest of logic same as before)
             let motionValid = false;
             let statusMessage = 'ACTIVE SCRUBBING';
 
             if (this.currentStep === 1 && this.currentScrubMotion === 'palm') motionValid = true;
             else if (this.currentStep === 2 && this.currentScrubMotion === 'interlace') motionValid = true;
             else if (this.currentStep === 3 && (this.currentScrubMotion === 'thumbs' || this.currentScrubMotion === 'fingertips')) motionValid = true;
-            else if (this.currentStep === 4) motionValid = true; // Any motion is fine for final rinse/dry
+            else if (this.currentStep === 4) motionValid = true;
 
-            if (!motionValid && this.currentStep !== 4) {
-                statusMessage = 'INCORRECT MOTION';
-                this.statusDot.style.background = '#ffaa00'; // Warning color
-                this.feedbackTxt.innerText = `Please check step ${this.currentStep} instructions.`;
-            } else {
-                this.statusDot.style.background = '';
-                this.feedbackTxt.innerText = 'Good progress! Keep going.';
+            this.isScrubbing = data.active && (motionValid || this.currentStep === 4);
+
+            if (this.isScrubbing) {
+                this.statusDot.classList.add('active');
+                this.statusDot.style.background = '#00ff88';
+                this.statusText.innerText = 'ACTIVE SCRUBBING';
+                this.feedbackTxt.innerText = 'MoCap Tracking Active - Step ' + this.currentStep;
+            } else if (data.active) {
+                this.statusDot.classList.remove('active');
+                this.statusDot.style.background = '#ffaa00';
+                this.statusText.innerText = 'INCORRECT MOTION';
+                this.feedbackTxt.innerText = `Perform WHO Step ${this.currentStep} gesture.`;
             }
-
-            this.statusText.innerText = statusMessage;
-
-            // Only consider it valid scrubbing if the motion is correct
-            this.isScrubbing = motionValid || this.currentStep === 4;
         });
 
         // Granular Step detected
@@ -115,22 +122,35 @@ class HygieneAuditor {
             this.currentScrubMotion = data.step;
         });
 
-        // Hands lost or idle
+        // Hand Presence Feedback
+        this.engine.on('hand_detected', () => {
+            this.statusDot.style.background = '#fff';
+            this.statusText.innerText = 'WAITING FOR MOTION';
+        });
+
+        this.engine.on('hands_lost', () => {
+            this.isScrubbing = false;
+            this.statusText.innerText = 'HANDS OUT OF FRAME';
+            this.statusDot.classList.remove('active');
+            this.statusDot.style.background = '#ff4d4d';
+            this.feedbackTxt.innerText = 'Raise hands into the camera view.';
+            this.ctx.clearRect(0, 0, this.overlay.width, this.overlay.height);
+        });
+
         this.engine.on('idle', () => {
             this.isScrubbing = false;
-            this.currentScrubMotion = null;
-            this.statusDot.classList.remove('active');
-            this.statusDot.style.background = '';
-            this.statusText.innerText = 'WAITING FOR MOTION';
-            this.feedbackTxt.innerText = 'Please resume step instructions to continue timer';
+            this.ctx.clearRect(0, 0, this.overlay.width, this.overlay.height);
         });
     }
 
     tick() {
         if (!this.isActive) return;
 
-        // Only count down if AI detects active scrubbing
-        if (this.isScrubbing) {
+        const now = Date.now();
+        const isHeartbeatActive = (now - this.lastHeartbeat) < 500;
+
+        // ONLY count down if AI detects active scrubbing AND correct motion AND recent heartbeat
+        if (this.isScrubbing && isHeartbeatActive) {
             this.timerVal -= 0.05; // Smoothing sub-seconds
 
             // Update UI
@@ -147,6 +167,10 @@ class HygieneAuditor {
             if (this.timerVal <= 0) {
                 this.completeProcedure();
             }
+        } else if (!isHeartbeatActive && this.isScrubbing) {
+            // Force stop if engine is silent
+            this.isScrubbing = false;
+            this.statusDot.classList.remove('active');
         }
 
         requestAnimationFrame(() => this.tick());
@@ -188,6 +212,55 @@ class HygieneAuditor {
     completeProcedure() {
         this.isActive = false;
         document.getElementById('celebration').classList.add('active');
+    }
+
+    drawMesh(allHands) {
+        this.ctx.clearRect(0, 0, this.overlay.width, this.overlay.height);
+
+        // Match canvas to display size
+        if (this.overlay.width !== this.overlay.clientWidth) {
+            this.overlay.width = this.overlay.clientWidth;
+            this.overlay.height = this.overlay.clientHeight;
+        }
+
+        const CONNECTIONS = [
+            [0, 1], [1, 2], [2, 3], [3, 4], // Thumb
+            [0, 5], [5, 6], [6, 7], [7, 8], // Index
+            [0, 9], [9, 10], [10, 11], [11, 12], // Middle
+            [0, 13], [13, 14], [14, 15], [15, 16], // Ring
+            [0, 17], [17, 18], [18, 19], [19, 20] // Pinky
+        ];
+
+        allHands.forEach((hand, index) => {
+            const color = index === 0 ? '#00d2ff' : '#00ff88';
+
+            // Draw Connections (Bones)
+            this.ctx.strokeStyle = color;
+            this.ctx.lineWidth = 4;
+            this.ctx.lineCap = 'round';
+            this.ctx.shadowBlur = 15;
+            this.ctx.shadowColor = color;
+
+            CONNECTIONS.forEach(([i, j]) => {
+                const pt1 = hand[i];
+                const pt2 = hand[j];
+                this.ctx.beginPath();
+                // Coordinate Mirror Fix: If the canvas is mirrored with CSS scaleX(-1),
+                // we should draw as if looking into a mirror.
+                this.ctx.moveTo(pt1.x * this.overlay.width, pt1.y * this.overlay.height);
+                this.ctx.lineTo(pt2.x * this.overlay.width, pt2.y * this.overlay.height);
+                this.ctx.stroke();
+            });
+
+            // Draw Joint Glow
+            this.ctx.fillStyle = 'white';
+            this.ctx.shadowBlur = 5;
+            hand.forEach(pt => {
+                this.ctx.beginPath();
+                this.ctx.arc(pt.x * this.overlay.width, pt.y * this.overlay.height, 4, 0, Math.PI * 2);
+                this.ctx.fill();
+            });
+        });
     }
 }
 

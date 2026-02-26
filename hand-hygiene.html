@@ -203,8 +203,19 @@
             font-weight: 600;
             margin-bottom: 20px;
             background: linear-gradient(to right, #fff, #00d2ff);
-            -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
+        }
+
+        #gesture-overlay {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: scaleX(-1);
+            /* Mirror to match video */
+            pointer-events: none;
         }
 
         .mode-selector {
@@ -396,6 +407,8 @@
 
             <div class="webcam-container">
                 <video id="webcam-video" autoplay playsinline></video>
+                <canvas id="gesture-overlay"
+                    style="position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
                 <div class="status-badge">
                     <span id="status-dot" class="status-dot"></span>
                     <span id="status-text">WAITING FOR HANDS...</span>

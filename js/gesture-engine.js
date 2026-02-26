@@ -12,6 +12,9 @@ export class GestureEngine {
             zoom: [],
             point: [],
             scrub: [],
+            scrub_step: [],
+            hand_detected: [],
+            hands_lost: [],
             idle: [],
             any: []
         };
@@ -19,7 +22,9 @@ export class GestureEngine {
         // Gesture State
         this.prevHand = null;
         this.pinchStartDist = null;
+        this.stretchStartDist = null;
         this.lastHandPos = [null, null]; // For scrub velocity
+        this.handsPresent = false;
     }
 
     async init() {
@@ -33,7 +38,10 @@ export class GestureEngine {
                 delegate: "GPU"
             },
             runningMode: "VIDEO",
-            numHands: this.numHands
+            numHands: this.numHands,
+            minHandDetectionConfidence: 0.7,
+            minHandPresenceConfidence: 0.7,
+            minTrackingConfidence: 0.7
         });
 
         this.startDetection();
@@ -57,54 +65,123 @@ export class GestureEngine {
 
     processResults(results) {
         if (!results.landmarks || results.landmarks.length === 0) {
+            if (this.handsPresent) {
+                this.emit('hands_lost');
+                this.handsPresent = false;
+            }
             this.emit('idle');
             this.prevHand = null;
+            this.lastHandPos = [null, null];
             return;
         }
 
-        this.emit('any');
-
-        // Multi-hand detection for clinical use (Scrubbing)
-        if (results.landmarks.length >= 2) {
-            this.detectScrubbing(results.landmarks);
+        if (!this.handsPresent) {
+            this.emit('hand_detected');
+            this.handsPresent = true;
         }
 
-        const landmarks = results.landmarks[0];
+        // Emit for drawing mesh (normalized landmarks)
+        this.emit('draw', { landmarks: results.landmarks });
 
-        // 3D Navigation Gestures
-        this.detectRotation(landmarks);
-        this.detectPinch(landmarks);
-        this.detectPoint(landmarks);
+        this.emit('any');
+
+        // Multi-hand detection (Scrubbing / Zoom)
+        if (results.landmarks.length >= 2) {
+            // Use worldLandmarks (meters) for more precise clinical distance logic
+            const worldLandmarks = results.worldLandmarks || [];
+            if (worldLandmarks.length >= 2) {
+                this.detectScrubbing(worldLandmarks, results.landmarks);
+            } else {
+                this.emit('scrub', { active: false, intensity: 0 });
+            }
+            this.detectTwoHandZoom(results.landmarks);
+        } else if (results.landmarks.length === 1) {
+            // Fallback for overlapping hands (Step 1: Palm to Palm)
+            this.detectSingleHandScrubbing(results.landmarks[0]);
+
+            // Single hand navigation 
+            const landmarks = results.landmarks[0];
+            this.detectRotation(landmarks);
+            this.detectPinch(landmarks);
+            this.detectPoint(landmarks);
+        } else {
+            this.emit('scrub', { active: false, intensity: 0 });
+        }
     }
 
-    // 🧼 SCRUB: Detect two hands overlapping and moving (WHO protocol)
-    detectScrubbing(allLandmarks) {
-        const h1 = allLandmarks[0];
-        const h2 = allLandmarks[1];
+    // 👐 STRETCH ZOOM: Simpler zoom and exploded view trigger
+    detectTwoHandZoom(allLandmarks) {
+        const h1 = allLandmarks[0][9]; // Palm 1
+        const h2 = allLandmarks[1][9]; // Palm 2
+        const currentDist = Math.hypot(h1.x - h2.x, h1.y - h2.y);
 
-        const center1 = h1[9]; // Palm center hand 1
-        const center2 = h2[9]; // Palm center hand 2
+        if (this.stretchStartDist !== null) {
+            const delta = currentDist - this.stretchStartDist;
+            // Only zoom if movement is significant
+            if (Math.abs(delta) > 0.005) {
+                this.emit('zoom', { delta: delta * 2.5 });
+            }
+        }
+        this.stretchStartDist = currentDist;
+    }
 
-        // Distance between palms
-        const dist = Math.hypot(center1.x - center2.x, center1.y - center2.y);
+    // 🧼 1-Hand Fallback: Detect high-velocity jitter indicating a rub
+    detectSingleHandScrubbing(landmarks) {
+        const center = landmarks[9];
+        let detected = false;
+
+        if (this.lastHandPos[0]) {
+            const v = Math.hypot(center.x - this.lastHandPos[0].x, center.y - this.lastHandPos[0].y);
+            // High velocity jitter is a signature of rubbing
+            if (v > 0.015) {
+                this.emit('scrub', { active: true, intensity: 0.5 });
+                this.emit('scrub_step', { step: 'palm' });
+                detected = true;
+            }
+        }
+
+        if (!detected) {
+            this.emit('scrub', { active: false, intensity: 0 });
+        }
+
+        this.lastHandPos[0] = center;
+    }
+
+    // 🧼 SCRUB: Detect two hands overlapping and moving using precise world dimensions (meters)
+    detectScrubbing(worldLandmarks, normalizedLandmarks) {
+        const w1 = worldLandmarks[0];
+        const w2 = worldLandmarks[1];
+
+        const h1 = normalizedLandmarks[0];
+        const h2 = normalizedLandmarks[1];
+
+        // Palm distance in meters (very precise)
+        const dist = Math.hypot(w1[9].x - w2[9].x, w1[9].y - w2[9].y, w1[9].z - w2[9].z);
 
         // Velocity check: Is there motion?
         let isMoving = false;
+        const center1 = h1[9];
+        const center2 = h2[9];
+
         if (this.lastHandPos[0] && this.lastHandPos[1]) {
             const v1 = Math.hypot(center1.x - this.lastHandPos[0].x, center1.y - this.lastHandPos[0].y);
             const v2 = Math.hypot(center2.x - this.lastHandPos[1].x, center2.y - this.lastHandPos[1].y);
             if (v1 > 0.005 || v2 > 0.005) isMoving = true;
         }
 
-        // Broad scrubbing detection
-        if (dist < 0.15 && isMoving) {
-            this.emit('scrub', { intensity: 1 - (dist / 0.15) });
+        // Broad scrubbing detection (0.08m = 8cm proximity)
+        const isScrubbing = dist < 0.08 && isMoving;
+
+        if (isScrubbing) {
+            this.emit('scrub', { active: true, intensity: 1 - (dist / 0.08) });
 
             // WHO Specific Step Classification
             const stepId = this.classifyScrubStep(h1, h2);
             if (stepId) {
                 this.emit('scrub_step', { step: stepId });
             }
+        } else {
+            this.emit('scrub', { active: false, intensity: 0 });
         }
 
         this.lastHandPos = [center1, center2];
@@ -159,14 +236,14 @@ export class GestureEngine {
         const thumb = landmarks[4];
         const index = landmarks[8];
         const dist = Math.hypot(thumb.x - index.x, thumb.y - index.y);
-        const fingersOut = this.getFingerCount(landmarks);
 
-        if (dist < 0.05 && fingersOut < 2) {
+        // Simpler pinch: More forgiving distance and finger count
+        if (dist < 0.08) {
             if (this.pinchStartDist === null) {
                 this.pinchStartDist = dist;
             } else {
                 const delta = dist - this.pinchStartDist;
-                this.emit('zoom', { delta: -delta * 5 });
+                this.emit('zoom', { delta: delta * 5 });
             }
         } else {
             this.pinchStartDist = null;

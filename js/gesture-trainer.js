@@ -64,7 +64,7 @@ class GestureTrainer {
             });
 
             // 3. Initialize Gesture Engine
-            this.engine = new GestureEngine(this.webcamElement);
+            this.engine = new GestureEngine(this.webcamElement, { numHands: 2 });
             await this.engine.init();
 
             // 3. Bind Engine Events to Scene Actions

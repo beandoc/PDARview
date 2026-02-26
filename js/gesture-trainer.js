@@ -25,9 +25,18 @@ class GestureTrainer {
         this.currentModelType = 'proxy';
         const toggleBtn = document.getElementById('model-toggle-btn');
         toggleBtn.addEventListener('click', () => {
-            this.currentModelType = this.currentModelType === 'proxy' ? 'vision-pro' : 'proxy';
+            const types = ['proxy', 'vision-pro', 'vision-pro-fbx'];
+            let nextIndex = (types.indexOf(this.currentModelType) + 1) % types.length;
+            this.currentModelType = types[nextIndex];
+
             this.scene.loadModel(this.currentModelType);
-            toggleBtn.querySelector('span:last-child').innerText = this.currentModelType === 'proxy' ? ' Test Model' : ' APD Machine';
+
+            const labels = {
+                'proxy': ' APD Machine',
+                'vision-pro': ' Vision Pro (Sample)',
+                'vision-pro-fbx': ' Vision Pro (Local FBX)'
+            };
+            toggleBtn.querySelector('span:last-child').innerText = labels[this.currentModelType];
         });
 
         // Handle UI Close

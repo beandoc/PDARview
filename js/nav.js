@@ -147,6 +147,10 @@ export function renderNavbar() {
               <span class="dd-icon">🩹</span>
               <div><strong>Exit Site Care</strong><small>Cleaning & dressing</small></div>
             </a>
+            <a href="/hand-hygiene.html" class="dd-link">
+              <span class="dd-icon">🧼</span>
+              <div><strong>Hygiene Auditor</strong><small>AI-powered hand scrubbing</small></div>
+            </a>
             <a href="/care-infection.html" class="dd-link">
               <span class="dd-icon">🦠</span>
               <div><strong>Infection Prevention</strong><small>Peritonitis awareness</small></div>

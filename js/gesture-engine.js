@@ -1,14 +1,17 @@
 import { HandLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
 
 export class GestureEngine {
-    constructor(videoElement) {
+    constructor(videoElement, options = {}) {
         this.video = videoElement;
         this.handLandmarker = null;
         this.lastVideoTime = -1;
+        this.numHands = options.numHands || 1;
+
         this.callbacks = {
             rotate: [],
             zoom: [],
             point: [],
+            scrub: [],
             idle: [],
             any: []
         };
@@ -16,7 +19,7 @@ export class GestureEngine {
         // Gesture State
         this.prevHand = null;
         this.pinchStartDist = null;
-        this.isPointing = false;
+        this.lastHandPos = [null, null]; // For scrub velocity
     }
 
     async init() {
@@ -30,7 +33,7 @@ export class GestureEngine {
                 delegate: "GPU"
             },
             runningMode: "VIDEO",
-            numHands: 1
+            numHands: this.numHands
         });
 
         this.startDetection();
@@ -38,10 +41,14 @@ export class GestureEngine {
 
     startDetection() {
         const predict = () => {
-            if (this.video.currentTime !== this.lastVideoTime && this.video.videoWidth > 0 && this.video.videoHeight > 0) {
+            if (this.handLandmarker && this.video.currentTime !== this.lastVideoTime && this.video.videoWidth > 0 && this.video.videoHeight > 0) {
                 this.lastVideoTime = this.video.currentTime;
-                const results = this.handLandmarker.detectForVideo(this.video, performance.now());
-                this.processResults(results);
+                try {
+                    const results = this.handLandmarker.detectForVideo(this.video, performance.now());
+                    this.processResults(results);
+                } catch (e) {
+                    console.warn("MediaPipe detection skipped frame:", e);
+                }
             }
             requestAnimationFrame(predict);
         };
@@ -56,37 +63,64 @@ export class GestureEngine {
         }
 
         this.emit('any');
-        const landmarks = results.landmarks[0]; // Tracking single hand for simplicity
 
-        // Analyze Gestures
+        // Multi-hand detection for clinical use (Scrubbing)
+        if (results.landmarks.length >= 2) {
+            this.detectScrubbing(results.landmarks);
+        }
+
+        const landmarks = results.landmarks[0];
+
+        // 3D Navigation Gestures
         this.detectRotation(landmarks);
         this.detectPinch(landmarks);
         this.detectPoint(landmarks);
     }
 
+    // 🧼 SCRUB: Detect two hands overlapping and moving (WHO protocol)
+    detectScrubbing(allLandmarks) {
+        const h1 = allLandmarks[0][9]; // Palm center hand 1
+        const h2 = allLandmarks[1][9]; // Palm center hand 2
+
+        // Distance between palms
+        const dist = Math.hypot(h1.x - h2.x, h1.y - h2.y);
+
+        // Velocity check: Is there motion?
+        let isMoving = false;
+        if (this.lastHandPos[0] && this.lastHandPos[1]) {
+            const v1 = Math.hypot(h1.x - this.lastHandPos[0].x, h1.y - this.lastHandPos[0].y);
+            const v2 = Math.hypot(h2.x - this.lastHandPos[1].x, h2.y - this.lastHandPos[1].y);
+            if (v1 > 0.005 || v2 > 0.005) isMoving = true;
+        }
+
+        // Scrubbing is detected if hands are close and moving
+        if (dist < 0.15 && isMoving) {
+            this.emit('scrub', { intensity: 1 - (dist / 0.15) });
+        }
+
+        this.lastHandPos = [h1, h2];
+    }
+
     // ✋ ROTATE: Follow palm movements
     detectRotation(landmarks) {
-        const palmCenter = landmarks[9]; // Middle MCP
+        const palmCenter = landmarks[9];
 
         if (this.prevHand) {
             const dx = palmCenter.x - this.prevHand.x;
             const dy = palmCenter.y - this.prevHand.y;
 
-            // Only rotate if palm is mostly open
             if (this.getFingerCount(landmarks) >= 3) {
-                this.emit('rotate', { dx: -dx, dy }); // Invert DX for natural feel
+                this.emit('rotate', { dx: -dx, dy });
             }
         }
         this.prevHand = palmCenter;
     }
 
-    // 🤏 PINCH: Zoom based on thumb-index distance
+    // 🤏 PINCH: Zoom
     detectPinch(landmarks) {
         const thumb = landmarks[4];
         const index = landmarks[8];
         const dist = Math.hypot(thumb.x - index.x, thumb.y - index.y);
-
-        // If other fingers are curled (pinch gesture)
         const fingersOut = this.getFingerCount(landmarks);
 
         if (dist < 0.05 && fingersOut < 2) {
@@ -105,8 +139,6 @@ export class GestureEngine {
     detectPoint(landmarks) {
         const indexTip = landmarks[8];
         const indexBase = landmarks[5];
-
-        // If index is pointing up and other fingers are curled
         const isPoint = indexTip.y < indexBase.y && this.getFingerCount(landmarks) === 1;
 
         if (isPoint) {
@@ -118,14 +150,10 @@ export class GestureEngine {
         const tips = [8, 12, 16, 20];
         const pips = [6, 10, 14, 18];
         let count = 0;
-
         for (let i = 0; i < 4; i++) {
             if (landmarks[tips[i]].y < landmarks[pips[i]].y) count++;
         }
-
-        // Thumb special case
         if (Math.abs(landmarks[4].x - landmarks[2].x) > 0.05) count++;
-
         return count;
     }
 

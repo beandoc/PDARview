@@ -24,6 +24,7 @@ export default defineConfig({
                 'supply-storage': resolve(__dirname, 'supply-storage.html'),
                 'catheter-guide': resolve(__dirname, 'catheter-guide.html'),
                 'gesture-trainer': resolve(__dirname, 'gesture-trainer.html'),
+                'hand-hygiene': resolve(__dirname, 'hand-hygiene.html'),
             },
         },
     },

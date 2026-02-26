@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 
 export class APDScene {
     constructor(canvas) {
@@ -8,6 +9,8 @@ export class APDScene {
         this.isIdle = true;
         this.idleY = 0;
         this.currentModel = null;
+        this.initialPositions = new Map();
+        this.explosionFactor = 0;
 
         this.init();
     }
@@ -55,8 +58,9 @@ export class APDScene {
         this.modelGroup = new THREE.Group();
         this.scene.add(this.modelGroup);
 
-        // 6. Model Loader
+        // 6. Model Loaders
         this.loader = new GLTFLoader();
+        this.fbxLoader = new FBXLoader();
         this.loadModel();
 
         // 7. Hotspots
@@ -80,6 +84,8 @@ export class APDScene {
         }
         this.hotspots.forEach(h => this.modelGroup.remove(h.mesh));
         this.hotspots = [];
+        this.initialPositions.clear();
+        this.explosionFactor = 0;
 
         if (type === 'proxy') {
             const group = new THREE.Group();
@@ -115,6 +121,13 @@ export class APDScene {
             this.addHotspot(0.2, 0, 0, "Solution Ports", "Connection points for dialysis bags.");
             this.addHotspot(-0.24, -0.08, 0, "Power Switch", "Rear panel power controls.");
 
+            // Capture initial positions for proxy meshes
+            group.children.forEach(node => {
+                if (node.isMesh) {
+                    this.initialPositions.set(node.uuid, node.position.clone());
+                }
+            });
+
             console.log("Scene initialized with high-fidelity proxy. Ready for .glb swap.");
 
         } else if (type === 'vision-pro') {
@@ -144,6 +157,8 @@ export class APDScene {
                     if (node.isMesh) {
                         node.castShadow = true;
                         node.receiveShadow = true;
+                        // Capture initial positions for GLTF
+                        this.initialPositions.set(node.uuid, node.position.clone());
                     }
                 });
 
@@ -157,6 +172,43 @@ export class APDScene {
             }, undefined, (error) => {
                 console.error("Error loading test model:", error);
                 this.loadModel('proxy'); // Fallback
+            });
+        } else if (type === 'vision-pro-fbx') {
+            const fbxPath = '/models/vision_pro.fbx'; // USER: Place your file here
+            console.log("Loading Vision Pro FBX model...");
+
+            this.fbxLoader.load(fbxPath, (object) => {
+                this.currentModel = object;
+
+                // Auto-center and scale
+                const box = new THREE.Box3().setFromObject(object);
+                const size = box.getSize(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const scale = 0.5 / maxDim;
+                object.scale.set(scale, scale, scale);
+
+                // Center it
+                const center = box.getCenter(new THREE.Vector3());
+                object.position.x += (object.position.x - center.x) * scale;
+                object.position.y += (object.position.y - center.y) * scale;
+                object.position.z += (object.position.z - center.z) * scale;
+
+                object.traverse(node => {
+                    if (node.isMesh) {
+                        node.castShadow = true;
+                        node.receiveShadow = true;
+                    }
+                });
+
+                this.modelGroup.add(object);
+
+                // Add test hotspots for Vision Pro
+                this.addHotspot(0, 0, 0.2, "Glass Front", "Laminated glass that acts as an optical lens.");
+                this.addHotspot(0.2, 0.1, 0, "Digital Crown", "Used to control immersion levels.");
+
+            }, undefined, (error) => {
+                console.warn("Could not find local FBX, falling back to proxy. Please place vision_pro.fbx in /public/models/", error);
+                this.loadModel('proxy');
             });
         }
     }
@@ -186,8 +238,38 @@ export class APDScene {
     }
 
     zoomModel(delta) {
-        this.camera.position.z += delta * 2;
-        this.camera.position.z = Math.max(0.8, Math.min(4, this.camera.position.z));
+        // Update camera position
+        this.camera.position.z += delta * 2.5; // Increased sensitivity
+        this.camera.position.z = Math.max(0.6, Math.min(4.5, this.camera.position.z));
+
+        // Calculate explosion factor based on zoom (0 to 1)
+        // Zoomed in (low Z) = high explosion
+        const minZ = 0.6;
+        const maxZ = 4.5;
+        const normalizedZ = (this.camera.position.z - minZ) / (maxZ - minZ);
+        this.explosionFactor = 1.0 - normalizedZ; // 1 at 0.6Z, 0 at 4.5Z
+
+        this.applyExplodedView();
+    }
+
+    applyExplodedView() {
+        if (!this.currentModel) return;
+
+        this.currentModel.traverse(node => {
+            if (node.isMesh && this.initialPositions.has(node.uuid)) {
+                const initialPos = this.initialPositions.get(node.uuid);
+
+                // Direction of explosion (from center)
+                const direction = initialPos.clone().normalize();
+
+                // Move meshes outward based on explosion factor
+                // Stronger effect for meshes further from center
+                const strength = initialPos.length() * 2.0;
+                node.position.x = initialPos.x + direction.x * this.explosionFactor * strength;
+                node.position.y = initialPos.y + direction.y * this.explosionFactor * strength;
+                node.position.z = initialPos.z + direction.z * this.explosionFactor * strength;
+            }
+        });
     }
 
     checkHotspots(x, y) {
@@ -201,19 +283,20 @@ export class APDScene {
 
         // Reset all glows
         this.hotspots.forEach(h => {
-            h.glow.scale.set(1, 1, 1);
-            h.mesh.material.color.set(0x4facfe);
+            if (h.glow) h.glow.scale.set(1, 1, 1);
+            if (h.mesh && h.mesh.material) h.mesh.material.color.set(0x4facfe);
         });
 
         if (intersects.length > 0) {
             const hitMesh = intersects[0].object;
             const hotspot = this.hotspots.find(h => h.mesh === hitMesh);
 
-            // Pulse selected hotspot
-            hitMesh.children[0].scale.set(1.5, 1.5, 1.5);
-            hitMesh.material.color.set(0xffffff);
-
-            return hotspot;
+            if (hotspot && hotspot.glow) {
+                // Pulse selected hotspot
+                hotspot.glow.scale.set(1.5, 1.5, 1.5);
+                hitMesh.material.color.set(0xffffff);
+                return hotspot;
+            }
         }
         return null;
     }
@@ -235,8 +318,10 @@ export class APDScene {
         // Pulse all hotspots subtly
         const time = Date.now() * 0.002;
         this.hotspots.forEach(h => {
-            const s = 1 + Math.sin(time) * 0.1;
-            h.mesh.scale.set(s, s, s);
+            if (h.mesh) {
+                const s = 1 + Math.sin(time) * 0.1;
+                h.mesh.scale.set(s, s, s);
+            }
         });
 
         this.renderer.render(this.scene, this.camera);

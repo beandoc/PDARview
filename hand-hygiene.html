@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hand Hygiene Auditor | NephroView</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --audit-primary: #00d2ff;
+            --audit-bg: #0d0d0d;
+        }
+
+        body {
+            background: var(--audit-bg);
+            color: white;
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .auditor-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Left side: Instructions */
+        .instruction-panel {
+            flex: 1;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .step-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+            opacity: 0.5;
+        }
+
+        .step-card.active {
+            opacity: 1;
+            border-left-color: var(--audit-primary);
+            background: rgba(0, 210, 255, 0.1);
+            transform: translateX(10px);
+        }
+
+        .step-number {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--audit-primary);
+            margin-bottom: 8px;
+        }
+
+        /* Right side: Monitoring */
+        .monitor-panel {
+            flex: 1.5;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .timer-ring {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin-bottom: 40px;
+        }
+
+        .timer-svg {
+            transform: rotate(-90deg);
+        }
+
+        .timer-circle-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 8;
+        }
+
+        .timer-circle-progress {
+            fill: none;
+            stroke: var(--audit-primary);
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-dasharray: 880;
+            /* Pi * 280 */
+            stroke-dashoffset: 880;
+            transition: stroke-dashoffset 0.1s linear;
+        }
+
+        .timer-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .timer-val {
+            font-size: 4rem;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .timer-label {
+            font-size: 0.9rem;
+            opacity: 0.6;
+            margin-top: 5px;
+        }
+
+        .webcam-container {
+            width: 100%;
+            max-width: 480px;
+            aspect-ratio: 4/3;
+            border-radius: 24px;
+            overflow: hidden;
+            background: #000;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        #webcam-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff4d4d;
+        }
+
+        .status-dot.active {
+            background: #00ff88;
+            box-shadow: 0 0 10px #00ff88;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .landing-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--audit-bg);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .landing-content {
+            max-width: 600px;
+        }
+
+        .landing-h1 {
+            font-size: 3.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, #fff, #00d2ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 20px;
+            margin-top: 40px;
+            justify-content: center;
+        }
+
+        .mode-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 200px;
+        }
+
+        .mode-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--audit-primary);
+            transform: translateY(-5px);
+        }
+
+        .mode-btn.selected {
+            background: rgba(0, 210, 255, 0.1);
+            border-color: var(--audit-primary);
+        }
+
+        .mode-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .mode-name {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .mode-desc {
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+
+        .start-btn {
+            margin-top: 40px;
+            background: var(--audit-primary);
+            color: black;
+            border: none;
+            padding: 18px 48px;
+            border-radius: 100px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 210, 255, 0.4);
+        }
+
+        .back-nav {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            z-index: 100;
+            color: white;
+            text-decoration: none;
+            opacity: 0.6;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .back-nav:hover {
+            opacity: 1;
+        }
+
+        .celebration {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .celebration.active {
+            display: flex;
+        }
+
+        @media (max-width: 1024px) {
+            .auditor-container {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+
+            .instruction-panel {
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .timer-ring {
+                width: 200px;
+                height: 200px;
+            }
+
+            .landing-h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="landing-overlay" class="landing-overlay">
+        <div class="landing-content">
+            <h1 class="landing-h1">Clinical Hand Hygiene Auditor</h1>
+            <p>Ensure strict compliance with WHO protocols. The timer only counts down when active scrubbing is detected
+                by AI.</p>
+
+            <div class="mode-selector">
+                <div class="mode-btn selected" data-time="60" id="mode-wash">
+                    <span class="mode-icon">🧼</span>
+                    <span class="mode-name">Hand Wash</span>
+                    <span class="mode-desc">40-60 Seconds</span>
+                </div>
+                <div class="mode-btn" data-time="30" id="mode-rub">
+                    <span class="mode-icon">✨</span>
+                    <span class="mode-name">Hand Rub</span>
+                    <span class="mode-desc">20-30 Seconds</span>
+                </div>
+            </div>
+
+            <button id="start-btn" class="start-btn">Begin Scrub Procedure</button>
+        </div>
+    </div>
+
+    <div class="auditor-container">
+        <a href="/" class="back-nav">← Back to Dashboard</a>
+
+        <div class="instruction-panel">
+            <h2 style="margin-bottom: 30px; font-weight: 600;">Active Procedure Steps</h2>
+
+            <div id="step-1" class="step-card active">
+                <div class="step-number">Step 1</div>
+                <h3>Apply & Lather</h3>
+                <p>Palm to palm, covering all surfaces.</p>
+            </div>
+
+            <div id="step-2" class="step-card">
+                <div class="step-number">Step 2</div>
+                <h3>Interlace & Scrub</h3>
+                <p>Palm over dorsum, fingers interlaced.</p>
+            </div>
+
+            <div id="step-3" class="step-card">
+                <div class="step-number">Step 3</div>
+                <h3>Fingertips & Thumbs</h3>
+                <p>Rotational rubbing of thumbs and nails.</p>
+            </div>
+
+            <div id="step-4" class="step-card">
+                <div class="step-number">Step 4</div>
+                <h3>Rinse & Dry</h3>
+                <p>Finish with thorough drying.</p>
+            </div>
+        </div>
+
+        <div class="monitor-panel">
+            <div class="timer-ring">
+                <svg class="timer-svg" width="300" height="300" viewBox="0 0 300 300">
+                    <circle class="timer-circle-bg" cx="150" cy="150" r="140"></circle>
+                    <circle id="timer-progress" class="timer-circle-progress" cx="150" cy="150" r="140"></circle>
+                </svg>
+                <div class="timer-text">
+                    <div id="timer-val" class="timer-val">60</div>
+                    <div class="timer-label">SECONDS REMAINING</div>
+                </div>
+            </div>
+
+            <div class="webcam-container">
+                <video id="webcam-video" autoplay playsinline></video>
+                <div class="status-badge">
+                    <span id="status-dot" class="status-dot"></span>
+                    <span id="status-text">WAITING FOR HANDS...</span>
+                </div>
+            </div>
+
+            <p id="feedback-txt" style="margin-top: 20px; opacity: 0.6; font-size: 0.9rem;">Maintain scrubbing motion to
+                start timer</p>
+        </div>
+    </div>
+
+    <div id="celebration" class="celebration">
+        <div>
+            <span style="font-size: 5rem;">✅</span>
+            <h1 style="font-size: 3rem; margin-top: 20px;">Protocol Complete</h1>
+            <p style="opacity: 0.7; max-width: 400px; margin: 20px auto;">Your hands are now safe for cycler connection.
+                Protocol compliance has been logged.</p>
+            <button class="start-btn" onclick="window.location.href='/gesture-trainer.html'">Continue to Cycler
+                Setup</button>
+        </div>
+    </div>
+
+    <script type="module" src="js/hand-hygiene.js"></script>
+</body>
+
+</html>

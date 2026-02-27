@@ -18,7 +18,7 @@ const captureBtn = document.getElementById('capture-view');
 const toast = document.getElementById('toast');
 
 // ─── 3D Model Loading (Scan vs. Fallback Box) ───
-const REAL_MODEL_PATH = '/assets/models/apd_machine_scan.glb';
+const REAL_MODEL_PATH = 'assets/models/apd_machine_scan.glb';
 
 (async () => {
     try {
@@ -272,7 +272,11 @@ function showToast(message) {
     if (!toast) return;
     toast.textContent = message;
     toast.className = 'toast show';
-    setTimeout(() => { toast.className = toast.className.replace('show', ''); }, 3000);
+    setTimeout(() => {
+        if (toast.className.includes('show')) {
+            toast.className = toast.className.replace('show', '');
+        }
+    }, 3000);
 }
 
 captureBtn?.addEventListener('click', async () => {

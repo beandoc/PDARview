@@ -5,7 +5,7 @@ NephroView is a comprehensive WebAR platform designed to empower Peritoneal Dial
 ## 🚀 Key Features
 
 ### 1. 3D AR Device Viewer
-- **App-less AR**: Visualize the APD machine (Vantive HomeChoice Claria) in your own space using WebXR.
+- **App-less AR**: Visualize the APD machine (HomeChoice APD Cycler) in your own space using WebXR.
 - **Interactive Hotspots**: Learn about the screen, cassette door, and ports through anchored 3D annotations.
 - **Guided Tour**: Automated camera transitions that walk users through the machine's anatomy.
 

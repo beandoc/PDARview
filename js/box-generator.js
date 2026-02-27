@@ -6,6 +6,11 @@
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 
+// Module-level singleton — avoid re-instantiating per call
+const _exporter = new GLTFExporter();
+let _lastBlobUrl = null;
+let _lastStackBlobUrl = null;
+
 /**
  * Generate a single box with per-face coloring for 3D depth perception.
  * Returns a Blob URL pointing to a .glb file.
@@ -53,11 +58,13 @@ export async function generateColoredBox(width, height, depth, colors = {}) {
     });
 
     // Export as GLB
-    const exporter = new GLTFExporter();
     return new Promise((resolve, reject) => {
-        exporter.parse(scene, (buffer) => {
+        _exporter.parse(scene, (buffer) => {
+            // Free the previous blob to avoid memory leaks
+            if (_lastBlobUrl) URL.revokeObjectURL(_lastBlobUrl);
             const blob = new Blob([buffer], { type: 'model/gltf-binary' });
-            resolve(URL.createObjectURL(blob));
+            _lastBlobUrl = URL.createObjectURL(blob);
+            resolve(_lastBlobUrl);
         }, (err) => reject(err), { binary: true });
     });
 }
@@ -181,11 +188,13 @@ export async function generateSupplyStack(count, strategy = 'block') {
     });
 
     // Export as GLB
-    const exporter = new GLTFExporter();
     return new Promise((resolve, reject) => {
-        exporter.parse(scene, (buffer) => {
+        _exporter.parse(scene, (buffer) => {
+            // Free the previous stack blob to avoid memory leaks
+            if (_lastStackBlobUrl) URL.revokeObjectURL(_lastStackBlobUrl);
             const blob = new Blob([buffer], { type: 'model/gltf-binary' });
-            resolve(URL.createObjectURL(blob));
+            _lastStackBlobUrl = URL.createObjectURL(blob);
+            resolve(_lastStackBlobUrl);
         }, (err) => reject(err), { binary: true });
     });
 }

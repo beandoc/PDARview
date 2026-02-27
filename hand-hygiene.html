@@ -76,9 +76,10 @@
 
         .timer-ring {
             position: relative;
-            width: 300px;
-            height: 300px;
-            margin-bottom: 40px;
+            width: 200px;
+            /* Reduced to give video more space */
+            height: 200px;
+            margin-bottom: 20px;
         }
 
         .timer-svg {
@@ -97,7 +98,7 @@
             stroke-width: 8;
             stroke-linecap: round;
             stroke-dasharray: 880;
-            /* Pi * 280 */
+            /* Pi * 280 roughly, will keep as is and math handles it */
             stroke-dashoffset: 880;
             transition: stroke-dashoffset 0.1s linear;
         }
@@ -124,7 +125,8 @@
 
         .webcam-container {
             width: 100%;
-            max-width: 480px;
+            max-width: 800px;
+            /* Greatly increased size */
             aspect-ratio: 4/3;
             border-radius: 24px;
             overflow: hidden;
@@ -363,8 +365,8 @@
             }
 
             .timer-ring {
-                width: 200px;
-                height: 200px;
+                width: 150px;
+                height: 150px;
             }
 
             .landing-h1 {
@@ -383,15 +385,15 @@
                 by AI.</p>
 
             <div class="mode-selector">
-                <div class="mode-btn selected" data-time="60" id="mode-wash">
+                <div class="mode-btn selected" data-time="30" id="mode-wash">
                     <span class="mode-icon">🧼</span>
                     <span class="mode-name">Hand Wash</span>
-                    <span class="mode-desc">40-60 Seconds</span>
+                    <span class="mode-desc">30 Seconds</span>
                 </div>
-                <div class="mode-btn" data-time="30" id="mode-rub">
+                <div class="mode-btn" data-time="15" id="mode-rub">
                     <span class="mode-icon">✨</span>
                     <span class="mode-name">Hand Rub</span>
-                    <span class="mode-desc">20-30 Seconds</span>
+                    <span class="mode-desc">15 Seconds</span>
                 </div>
             </div>
 

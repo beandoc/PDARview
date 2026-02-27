@@ -57,18 +57,20 @@ const REAL_MODEL_PATH = 'assets/models/apd_machine_scan.glb';
 })();
 
 
-// ─── Live Zoom Percentage Indicator ───
+// ─── Live Zoom Percentage Indicator (throttled) ───
+let _zoomThrottleTimer = null;
 viewer?.addEventListener('camera-change', () => {
-    if (!zoomIndicator) return;
-    // Extract current distance from camera-orbit string
-    const orbit = viewer.getCameraOrbit();
-    const dist = orbit.radius; // in meters
-    // Reference distance: 1.5m = 100%
-    const refDist = 1.5;
-    const zoomPct = Math.round((refDist / dist) * 100);
-    zoomIndicator.textContent = `${zoomPct}%`;
-    zoomIndicator.classList.toggle('zoomed-in', zoomPct > 120);
-    zoomIndicator.classList.toggle('zoomed-out', zoomPct < 80);
+    if (!zoomIndicator || _zoomThrottleTimer) return;
+    _zoomThrottleTimer = setTimeout(() => {
+        _zoomThrottleTimer = null;
+        const orbit = viewer.getCameraOrbit();
+        const dist = orbit.radius;
+        const refDist = 1.5;
+        const zoomPct = Math.round((refDist / dist) * 100);
+        zoomIndicator.textContent = `${zoomPct}%`;
+        zoomIndicator.classList.toggle('zoomed-in', zoomPct > 120);
+        zoomIndicator.classList.toggle('zoomed-out', zoomPct < 80);
+    }, 50);
 });
 
 
@@ -255,27 +257,23 @@ function startTour() {
 
 function showStep(index) {
     const step = tourSteps[index];
+    if (!step) return;
     viewer.cameraOrbit = step.orbit;
     viewer.fieldOfView = '25deg';
 
     closeAllLabels();
     const hotspot = document.getElementById(step.target);
-    const label = hotspot.querySelector('.hotspot-label');
-    label.classList.add('active');
-
-    // Update UI if any tour-specific UI exists
-    console.log(`Tour Step ${index + 1}: ${step.title}`);
+    const label = hotspot?.querySelector('.hotspot-label');
+    if (label) label.classList.add('active');
 }
 
 // ─── Capture View & Toast ───
 function showToast(message) {
     if (!toast) return;
     toast.textContent = message;
-    toast.className = 'toast show';
+    toast.classList.add('show');
     setTimeout(() => {
-        if (toast.className.includes('show')) {
-            toast.className = toast.className.replace('show', '');
-        }
+        toast.classList.remove('show');
     }, 3000);
 }
 

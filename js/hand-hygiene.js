@@ -3,8 +3,8 @@ import { GestureEngine } from './gesture-engine.js';
 class HygieneAuditor {
     constructor() {
         this.engine = null;
-        this.timerVal = 60;
-        this.totalDuration = 60;
+        this.timerVal = 30; // Reduced default to 30s
+        this.totalDuration = 30;
         this.isActive = false;
         this.isScrubbing = false;
         this.currentScrubMotion = null;
@@ -36,13 +36,13 @@ class HygieneAuditor {
         const modeRub = document.getElementById('mode-rub');
 
         modeWash.addEventListener('click', () => {
-            this.setDuration(60);
+            this.setDuration(30);
             modeWash.classList.add('selected');
             modeRub.classList.remove('selected');
         });
 
         modeRub.addEventListener('click', () => {
-            this.setDuration(30);
+            this.setDuration(15);
             modeRub.classList.add('selected');
             modeWash.classList.remove('selected');
         });
@@ -63,6 +63,14 @@ class HygieneAuditor {
         document.getElementById('landing-overlay').style.display = 'none';
 
         try {
+            // Check for secure context and media device support
+            if (!window.isSecureContext) {
+                throw new Error('Camera access requires a secure context (HTTPS or localhost).');
+            }
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error('Your browser does not support webcam access.');
+            }
+
             // Start Camera
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { width: 640, height: 480, facingMode: 'user' }
@@ -97,19 +105,17 @@ class HygieneAuditor {
             this.drawMesh(data.landmarks);
         });
 
-        // 🚨 Broad Scrubbing detected
         this.engine.on('scrub', (data) => {
             this.lastHeartbeat = Date.now();
-            // ... (rest of logic same as before)
             let motionValid = false;
-            let statusMessage = 'ACTIVE SCRUBBING';
 
+            // STRICT WHO COMPLIANCE ENFORCEMENT
             if (this.currentStep === 1 && this.currentScrubMotion === 'palm') motionValid = true;
             else if (this.currentStep === 2 && this.currentScrubMotion === 'interlace') motionValid = true;
             else if (this.currentStep === 3 && (this.currentScrubMotion === 'thumbs' || this.currentScrubMotion === 'fingertips')) motionValid = true;
-            else if (this.currentStep === 4) motionValid = true;
+            else if (this.currentStep === 4) motionValid = true; // allow general scrubbing for final step
 
-            this.isScrubbing = data.active && (motionValid || this.currentStep === 4);
+            this.isScrubbing = data.active && motionValid;
 
             if (this.isScrubbing) {
                 this.statusDot.classList.add('active');
@@ -120,7 +126,11 @@ class HygieneAuditor {
                 this.statusDot.classList.remove('active');
                 this.statusDot.style.background = '#ffaa00';
                 this.statusText.innerText = 'INCORRECT MOTION';
-                this.feedbackTxt.innerText = `Perform WHO Step ${this.currentStep} gesture.`;
+
+                // Provide guided hints when they are doing the wrong motion
+                if (this.currentStep === 2) this.feedbackTxt.innerText = 'Step 2: Interlace your fingers together.';
+                else if (this.currentStep === 3) this.feedbackTxt.innerText = 'Step 3: Rotational rubbing of left/right thumbs.';
+                else this.feedbackTxt.innerText = `Perform WHO Step ${this.currentStep} gesture.`;
             }
         });
 
@@ -165,9 +175,9 @@ class HygieneAuditor {
         this.scrubBuffer.push(this.isScrubbing && isHeartbeatActive);
         if (this.scrubBuffer.length > this.bufferSize) this.scrubBuffer.shift();
 
-        // Check if clinical criteria met (e.g. 70% of frames in buffer must be valid)
+        // Check if clinical criteria met (e.g. 50% of frames in buffer must be valid - more lenient)
         const validFrames = this.scrubBuffer.filter(v => v).length;
-        const isClinicallyScrubbing = (validFrames / this.scrubBuffer.length) >= 0.7;
+        const isClinicallyScrubbing = (validFrames / this.scrubBuffer.length) >= 0.5;
 
         // ONLY count down if AI detects stable, correct scrubbing
         if (isClinicallyScrubbing) {

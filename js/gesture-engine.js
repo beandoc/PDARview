@@ -6,11 +6,15 @@ export class GestureEngine {
         this.handLandmarker = null;
         this.lastVideoTime = -1;
         this.numHands = options.numHands || 1;
+        this._rafId = null;
+        this._destroyed = false;
 
         this.callbacks = {
             rotate: [],
             zoom: [],
+            move: [],
             point: [],
+            draw: [],
             scrub: [],
             scrub_step: [],
             hand_detected: [],
@@ -22,7 +26,7 @@ export class GestureEngine {
         // Gesture State
         this.prevHand = null;
         this.pinchStartDist = null;
-        this.stretchStartDist = null;
+        this.pinchStartPos = null;
         this.lastHandPos = [null, null];
         this.handsPresent = false;
 
@@ -53,18 +57,36 @@ export class GestureEngine {
 
     startDetection() {
         const predict = () => {
+            if (this._destroyed) return;
+            const now = performance.now();
             if (this.handLandmarker && this.video.currentTime !== this.lastVideoTime && this.video.videoWidth > 0 && this.video.videoHeight > 0) {
                 this.lastVideoTime = this.video.currentTime;
                 try {
-                    const results = this.handLandmarker.detectForVideo(this.video, performance.now());
+                    const results = this.handLandmarker.detectForVideo(this.video, now);
                     this.processResults(results);
                 } catch (e) {
-                    console.warn("MediaPipe detection skipped frame:", e);
+                    // Silently skip dropped frames — common on lower-end GPUs
                 }
             }
-            requestAnimationFrame(predict);
+            this._rafId = requestAnimationFrame(predict);
         };
         predict();
+    }
+
+    destroy() {
+        this._destroyed = true;
+        if (this._rafId) {
+            cancelAnimationFrame(this._rafId);
+            this._rafId = null;
+        }
+        if (this.handLandmarker) {
+            this.handLandmarker.close();
+            this.handLandmarker = null;
+        }
+        // Clear all callbacks
+        for (const key in this.callbacks) {
+            this.callbacks[key] = [];
+        }
     }
 
     processResults(results) {
@@ -89,44 +111,26 @@ export class GestureEngine {
 
         this.emit('any');
 
-        // Multi-hand detection (Scrubbing / Zoom)
+        // Process primary hand for navigation (Rotate, Zoom, Point)
+        const primaryHand = results.landmarks[0];
+        this.detectRotation(primaryHand);
+        this.detectPinch(primaryHand);
+        this.detectPoint(primaryHand);
+
+        // Multi-hand detection (Scrubbing ONLY - for clinical compliance)
         if (results.landmarks.length >= 2) {
-            // Use worldLandmarks (meters) for more precise clinical distance logic
             const worldLandmarks = results.worldLandmarks || [];
             if (worldLandmarks.length >= 2) {
                 this.detectScrubbing(worldLandmarks, results.landmarks);
             } else {
                 this.emit('scrub', { active: false, intensity: 0 });
             }
-            this.detectTwoHandZoom(results.landmarks);
         } else if (results.landmarks.length === 1) {
-            // Fallback for overlapping hands (Step 1: Palm to Palm)
+            // Hand hygiene fallback
             this.detectSingleHandScrubbing(results.landmarks[0]);
-
-            // Single hand navigation 
-            const landmarks = results.landmarks[0];
-            this.detectRotation(landmarks);
-            this.detectPinch(landmarks);
-            this.detectPoint(landmarks);
         } else {
             this.emit('scrub', { active: false, intensity: 0 });
         }
-    }
-
-    // 👐 STRETCH ZOOM: Simpler zoom and exploded view trigger
-    detectTwoHandZoom(allLandmarks) {
-        const h1 = allLandmarks[0][9]; // Palm 1
-        const h2 = allLandmarks[1][9]; // Palm 2
-        const currentDist = Math.hypot(h1.x - h2.x, h1.y - h2.y);
-
-        if (this.stretchStartDist !== null) {
-            const delta = currentDist - this.stretchStartDist;
-            // Only zoom if movement is significant
-            if (Math.abs(delta) > 0.005) {
-                this.emit('zoom', { delta: delta * 2.5 });
-            }
-        }
-        this.stretchStartDist = currentDist;
     }
 
     // 🧼 1-Hand Fallback: Detect high-velocity jitter indicating a rub
@@ -210,7 +214,7 @@ export class GestureEngine {
     // 🔬 Classify specific WHO motions based on 3D WORLD Landmark geometry
     classifyScrubStep(w1, w2) {
         // Step 2/3: Interlacing Fingers
-        // Vector analysis: Are index fingers parallel but pointing in opposite directions?
+        // Vector analysis: Are index fingers roughly pointing in opposite directions?
         const v1 = { x: w1[8].x - w1[5].x, y: w1[8].y - w1[5].y, z: w1[8].z - w1[5].z };
         const v2 = { x: w2[8].x - w2[5].x, y: w2[8].y - w2[5].y, z: w2[8].z - w2[5].z };
 
@@ -219,23 +223,23 @@ export class GestureEngine {
         const mag2 = Math.sqrt(v2.x ** 2 + v2.y ** 2 + v2.z ** 2);
         const dot = (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z) / (mag1 * mag2);
 
-        // Dot product < -0.5 means fingers are roughly pointing at each other (interlaced)
-        const isInterlaced = dot < -0.5;
+        // Relaxed threshold: dot < 0 means angle is > 90 deg opposite (much easier to hit)
+        const isInterlaced = dot < 0;
 
         // Step 6: Thumb Rubbing
-        // 3D distance between thumb tip and opposite palm center
+        // 3D distance between thumb tip and opposite palm center (Relaxed to 5cm / 0.05m)
         const t1ToP2 = Math.sqrt((w1[4].x - w2[9].x) ** 2 + (w1[4].y - w2[9].y) ** 2 + (w1[4].z - w2[9].z) ** 2);
         const t2ToP1 = Math.sqrt((w2[4].x - w1[9].x) ** 2 + (w2[4].y - w1[9].y) ** 2 + (w2[4].z - w1[9].z) ** 2);
 
         // Step 7: Fingertips in Palm
-        // Check 3D distance of clustered fingertips
+        // Check 3D distance of clustered fingertips (Relaxed spread and distance)
         const tips1ToP2 = Math.sqrt((w1[8].x - w2[9].x) ** 2 + (w1[8].y - w2[9].y) ** 2 + (w1[8].z - w2[9].z) ** 2);
         const fingerSpread = Math.sqrt((w1[8].x - w1[20].x) ** 2 + (w1[8].y - w1[20].y) ** 2 + (w1[8].z - w1[20].z) ** 2);
 
-        if (t1ToP2 < 0.04 || t2ToP1 < 0.04) {
+        if (t1ToP2 < 0.05 || t2ToP1 < 0.05) {
             return 'thumbs';
         }
-        else if (fingerSpread < 0.05 && tips1ToP2 < 0.04) {
+        else if (fingerSpread < 0.08 && tips1ToP2 < 0.05) {
             return 'fingertips';
         }
         else if (isInterlaced) {
@@ -260,22 +264,39 @@ export class GestureEngine {
         this.prevHand = palmCenter;
     }
 
-    // 🤏 PINCH: Zoom
+    // 🤏 PINCH: Zoom & Movement (Single Hand)
     detectPinch(landmarks) {
         const thumb = landmarks[4];
         const index = landmarks[8];
         const dist = Math.hypot(thumb.x - index.x, thumb.y - index.y);
 
-        // Simpler pinch: More forgiving distance and finger count
+        // A "pinch" is thumb and index meeting
         if (dist < 0.08) {
             if (this.pinchStartDist === null) {
                 this.pinchStartDist = dist;
+                this.pinchStartPos = { x: thumb.x, y: thumb.y };
             } else {
-                const delta = dist - this.pinchStartDist;
-                this.emit('zoom', { delta: delta * 5 });
+                const deltaDist = dist - this.pinchStartDist;
+                const deltaX = thumb.x - this.pinchStartPos.x;
+                const deltaY = thumb.y - this.pinchStartPos.y;
+
+                // 1. Zoom: Change in pinch width
+                if (Math.abs(deltaDist) > 0.002) {
+                    this.emit('zoom', { delta: deltaDist * 8 });
+                }
+
+                // 2. Move: Translation of the pinched hand
+                if (Math.abs(deltaX) > 0.01 || Math.abs(deltaY) > 0.01) {
+                    this.emit('move', { dx: deltaX, dy: deltaY });
+                }
+
+                // Smooth update
+                this.pinchStartDist = dist;
+                this.pinchStartPos = { x: thumb.x, y: thumb.y };
             }
         } else {
             this.pinchStartDist = null;
+            this.pinchStartPos = null;
         }
     }
 

@@ -50,6 +50,14 @@ class GestureTrainer {
         this.startBtn.innerText = 'Initializing...';
 
         try {
+            // 0. Check for secure context and media device support
+            if (!window.isSecureContext) {
+                throw new Error('Camera access requires a secure context (HTTPS or localhost).');
+            }
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error('Your browser does not support webcam access.');
+            }
+
             // 1. Start Webcam
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { width: 640, height: 480, facingMode: 'user' }
@@ -95,6 +103,12 @@ class GestureTrainer {
         this.engine.on('zoom', (data) => {
             this.scene.zoomModel(data.delta);
             this.updateBadge('gesture-zoom', true);
+        });
+
+        // Move: Map pinch movement to scene translation
+        this.engine.on('move', (data) => {
+            this.scene.moveModel(data.dx, data.dy);
+            this.updateBadge('gesture-move', true);
         });
 
         // Point: Raycast to find hotspots

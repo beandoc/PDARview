@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 
 export class APDScene {
     constructor(canvas) {
@@ -11,6 +11,11 @@ export class APDScene {
         this.currentModel = null;
         this.initialPositions = new Map();
         this.explosionFactor = 0;
+
+        // Reuse these every frame to avoid GC churn
+        this._raycaster = new THREE.Raycaster();
+        this._mouse = new THREE.Vector2();
+        this._resizeTimer = null;
 
         this.init();
     }
@@ -69,20 +74,42 @@ export class APDScene {
         this.addHotspot(0.2, 0, 0, "Solution Ports", "Up to 4 ports for your dialysis solution bags. Must be handled with strict sterile technique.");
         this.addHotspot(-0.24, -0.08, 0, "Power Switch", "Located on the side/rear. Keep the machine plugged in at all times during treatment.");
 
-        // 8. Handle Resize
-        window.addEventListener('resize', () => {
-            this.camera.aspect = window.innerWidth / window.innerHeight;
-            this.camera.updateProjectionMatrix();
-            this.renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        // 8. Handle Resize (debounced)
+        this._onResize = () => {
+            clearTimeout(this._resizeTimer);
+            this._resizeTimer = setTimeout(() => {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }, 100);
+        };
+        window.addEventListener('resize', this._onResize);
     }
 
     loadModel(type = 'proxy') {
-        // Clear existing model
+        // Clean up existing model (dispose geometry + materials to free GPU memory)
         if (this.currentModel) {
+            this.currentModel.traverse(node => {
+                if (node.isMesh) {
+                    node.geometry?.dispose();
+                    if (Array.isArray(node.material)) {
+                        node.material.forEach(m => m.dispose());
+                    } else {
+                        node.material?.dispose();
+                    }
+                }
+            });
             this.modelGroup.remove(this.currentModel);
         }
-        this.hotspots.forEach(h => this.modelGroup.remove(h.mesh));
+        this.hotspots.forEach(h => {
+            h.mesh.geometry?.dispose();
+            h.mesh.material?.dispose();
+            if (h.glow) {
+                h.glow.geometry?.dispose();
+                h.glow.material?.dispose();
+            }
+            this.modelGroup.remove(h.mesh);
+        });
         this.hotspots = [];
         this.initialPositions.clear();
         this.explosionFactor = 0;
@@ -237,6 +264,16 @@ export class APDScene {
         this.modelGroup.rotation.x = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, this.modelGroup.rotation.x));
     }
 
+    moveModel(dx, dy) {
+        // Translate model in X and Y (screen-space mapping)
+        this.modelGroup.position.x += dx * 2;
+        this.modelGroup.position.y -= dy * 2;
+
+        // Clamp to prevent moving out of sight
+        this.modelGroup.position.x = Math.max(-1, Math.min(1, this.modelGroup.position.x));
+        this.modelGroup.position.y = Math.max(-0.5, Math.min(0.5, this.modelGroup.position.y));
+    }
+
     zoomModel(delta) {
         // Update camera position - tighter range to keep model visible and scaled
         this.camera.position.z += delta * 2.5;
@@ -273,12 +310,11 @@ export class APDScene {
 
     checkHotspots(x, y) {
         // Convert screen coords (0-1) to NDC (-1 to 1)
-        const mouse = new THREE.Vector2(x * 2 - 1, -(y * 2 - 1));
-        const raycaster = new THREE.Raycaster();
-        raycaster.setFromCamera(mouse, this.camera);
+        this._mouse.set(x * 2 - 1, -(y * 2 - 1));
+        this._raycaster.setFromCamera(this._mouse, this.camera);
 
         const activeMeshes = this.hotspots.map(h => h.mesh);
-        const intersects = raycaster.intersectObjects(activeMeshes);
+        const intersects = this._raycaster.intersectObjects(activeMeshes);
 
         // Reset all glows
         this.hotspots.forEach(h => {

@@ -26,6 +26,12 @@ export default defineConfig({
                 'gesture-trainer': resolve(__dirname, 'gesture-trainer.html'),
                 'hand-hygiene': resolve(__dirname, 'hand-hygiene.html'),
             },
+            output: {
+                manualChunks: {
+                    'three-vendor': ['three'],
+                    'model-viewer': ['@google/model-viewer'],
+                },
+            },
         },
     },
     server: {

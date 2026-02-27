@@ -28,6 +28,9 @@
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
+            position: relative;
+            z-index: 50;
+            /* Ensure buttons are on top */
         }
 
         .input-group {
@@ -342,6 +345,7 @@
         const BOX_KG = 12.5;
 
         let strategy = localStorage.getItem('pd-storage-strategy') || 'block';
+        let generatingModel = false;
 
         async function updateCalculations() {
             const count = parseInt(slider.value);
@@ -390,8 +394,11 @@
                     console.log(`✅ Generated ${count} box stack (${strategy})`);
                 } catch (err) {
                     console.error('Failed to generate supply stack:', err);
+                } finally {
+                    generatingModel = false;
                 }
-                generatingModel = false;
+            } else {
+                console.warn('Generation in progress, skipping update...');
             }
         }
 
@@ -421,8 +428,29 @@
         });
 
         viewer.addEventListener('ar-status', (event) => {
-            if (event.detail.status === 'failed') {
-                alert('Unable to open AR. Please ensure your browser supports WebXR/AR and you have granted camera permissions.');
+            const status = event.detail.status;
+            console.log('AR Status:', status);
+
+            if (status === 'failed') {
+                let message = 'Unable to open AR. Please ensure your browser supports WebXR/AR and you have granted camera permissions.';
+
+                // Laptop specific check
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                if (!isMobile) {
+                    message = 'Floor-placed AR is only supported on mobile devices (Android/iOS). \n\nOn a laptop, you can view the 3D model in the window above, but to see it in your room, please open this link on your phone.';
+                } else if (!window.isSecureContext) {
+                    message = 'AR camera access requires a secure context (HTTPS or localhost). Please check your connection.';
+                }
+                alert(message);
+            }
+        });
+
+        // Diagnostic: Log if the button is even clicked
+        document.querySelector('.ar-button')?.addEventListener('click', () => {
+            console.log('AR Button Clicked');
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (!isMobile) {
+                alert('Floor-placed AR requires a mobile device. Laptops do not support room-scale placement via the camera.');
             }
         });
 

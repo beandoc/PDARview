@@ -51,10 +51,12 @@ const observer = new IntersectionObserver((entries) => {
   });
 }, observerOptions);
 
-document.querySelectorAll('.step-card, .spec-item, .faq-item, .guide-card').forEach(el => {
+document.querySelectorAll('.step-card, .spec-item, .faq-item, .guide-card').forEach((el, index) => {
   el.style.opacity = '0';
-  el.style.transform = 'translateY(20px)';
-  el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+  el.style.transform = 'translateY(30px)';
+  // Add staggered delay
+  const delay = (index % 4) * 0.1;
+  el.style.transition = `opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s, box-shadow 0.4s ease, border-color 0.4s ease, background 0.4s ease`;
   observer.observe(el);
 });
 

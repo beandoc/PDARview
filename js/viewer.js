@@ -121,10 +121,38 @@ viewer?.addEventListener('progress', (e) => {
     }
 });
 
+// ─── AR Status & Experience ───
+const arBanner = document.getElementById('ar-info-banner');
+let prevDimensionsState = false;
+
 viewer?.addEventListener('ar-status', (e) => {
-    console.log('AR Status:', e.detail.status);
-    if (e.detail.status === 'failed') {
-        alert('Unable to open AR. Please ensure your browser supports WebXR/AR and you have granted camera permissions.');
+    const status = e.detail.status;
+    console.log('AR Status:', status);
+
+    if (status === 'session-started') {
+        // Automatically show dimensions in AR for better scale reference
+        prevDimensionsState = dimensionsVisible;
+        if (!dimensionsVisible) {
+            dimensionsVisible = true;
+            toggleDimensions?.classList.add('active');
+            dimensionHotspots.forEach(d => d.classList.add('visible'));
+        }
+
+        // Show scale info banner
+        arBanner?.classList.add('active');
+        setTimeout(() => arBanner?.classList.remove('active'), 5000);
+
+    } else if (status === 'not-presenting') {
+        // Restore previous dimensions state when exiting AR
+        if (dimensionsVisible !== prevDimensionsState) {
+            dimensionsVisible = prevDimensionsState;
+            toggleDimensions?.classList.toggle('active', dimensionsVisible);
+            dimensionHotspots.forEach(d => d.classList.toggle('visible', dimensionsVisible));
+        }
+        arBanner?.classList.remove('active');
+
+    } else if (status === 'failed') {
+        alert('Unable to launch AR. \n\nPossible reasons:\n- Using a desktop browser (try on mobile)\n- Camera permissions denied\n- No AR support on this device');
     }
 });
 

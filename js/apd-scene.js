@@ -233,21 +233,20 @@ export class APDScene {
         this.modelGroup.rotation.y += dx * 2;
         this.modelGroup.rotation.x += dy * 2;
 
-        // Clamp X rotation to prevent flipping
-        this.modelGroup.rotation.x = Math.max(-Math.PI / 4, Math.min(Math.PI / 4, this.modelGroup.rotation.x));
+        // Clamp rotation to prevent flipping and extreme angles
+        this.modelGroup.rotation.x = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, this.modelGroup.rotation.x));
     }
 
     zoomModel(delta) {
-        // Update camera position
-        this.camera.position.z += delta * 2.5; // Increased sensitivity
-        this.camera.position.z = Math.max(0.6, Math.min(4.5, this.camera.position.z));
+        // Update camera position - tighter range to keep model visible and scaled
+        this.camera.position.z += delta * 2.5;
+        this.camera.position.z = Math.max(0.8, Math.min(3.5, this.camera.position.z));
 
         // Calculate explosion factor based on zoom (0 to 1)
-        // Zoomed in (low Z) = high explosion
-        const minZ = 0.6;
-        const maxZ = 4.5;
+        const minZ = 0.8;
+        const maxZ = 3.5;
         const normalizedZ = (this.camera.position.z - minZ) / (maxZ - minZ);
-        this.explosionFactor = 1.0 - normalizedZ; // 1 at 0.6Z, 0 at 4.5Z
+        this.explosionFactor = 1.0 - normalizedZ;
 
         this.applyExplodedView();
     }
@@ -311,8 +310,10 @@ export class APDScene {
             this.idleY += 0.02;
             this.modelGroup.position.y = Math.sin(this.idleY) * 0.02;
         } else {
-            // Smoothly return to center height
-            this.modelGroup.position.y *= 0.9;
+            // Smoothly return to center height and clamp vertical drift
+            this.modelGroup.position.y *= 0.95;
+            // Ensure the model doesn't drop too low below "horizon"
+            this.modelGroup.position.y = Math.max(-0.2, Math.min(0.4, this.modelGroup.position.y));
         }
 
         // Pulse all hotspots subtly

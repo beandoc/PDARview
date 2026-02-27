@@ -9,8 +9,12 @@ class HygieneAuditor {
         this.isScrubbing = false;
         this.currentScrubMotion = null;
         this.currentStep = 1;
-        this.lastHeartbeat = 0; // Prevent runaway timer if engine crashes
-        this.lastHeartbeat = 0; // Prevent runaway timer
+        this.lastHeartbeat = 0;
+        this.lastTickTime = 0;
+
+        // Smoothing Buffer for UI stability
+        this.scrubBuffer = [];
+        this.bufferSize = 10;
 
         // UI Elements
         this.timerEl = document.getElementById('timer-val');
@@ -20,6 +24,8 @@ class HygieneAuditor {
         this.video = document.getElementById('webcam-video');
         this.overlay = document.getElementById('gesture-overlay');
         this.ctx = this.overlay.getContext('2d');
+        this.calibrationBox = document.getElementById('calibration-box');
+        this.feedbackTxt = document.getElementById('feedback-txt');
 
         this.init();
     }
@@ -75,6 +81,7 @@ class HygieneAuditor {
 
             // Start Timer Loop
             this.isActive = true;
+            this.lastTickTime = performance.now();
             this.tick();
 
         } catch (error) {
@@ -126,6 +133,7 @@ class HygieneAuditor {
         this.engine.on('hand_detected', () => {
             this.statusDot.style.background = '#fff';
             this.statusText.innerText = 'WAITING FOR MOTION';
+            this.calibrationBox?.classList.add('active');
         });
 
         this.engine.on('hands_lost', () => {
@@ -135,6 +143,7 @@ class HygieneAuditor {
             this.statusDot.style.background = '#ff4d4d';
             this.feedbackTxt.innerText = 'Raise hands into the camera view.';
             this.ctx.clearRect(0, 0, this.overlay.width, this.overlay.height);
+            this.calibrationBox?.classList.remove('active');
         });
 
         this.engine.on('idle', () => {
@@ -146,12 +155,23 @@ class HygieneAuditor {
     tick() {
         if (!this.isActive) return;
 
-        const now = Date.now();
+        const now = performance.now();
+        const dt = (now - this.lastTickTime) / 1000; // Delta time in seconds
+        this.lastTickTime = now;
+
         const isHeartbeatActive = (now - this.lastHeartbeat) < 500;
 
-        // ONLY count down if AI detects active scrubbing AND correct motion AND recent heartbeat
-        if (this.isScrubbing && isHeartbeatActive) {
-            this.timerVal -= 0.05; // Smoothing sub-seconds
+        // Update smoothing buffer
+        this.scrubBuffer.push(this.isScrubbing && isHeartbeatActive);
+        if (this.scrubBuffer.length > this.bufferSize) this.scrubBuffer.shift();
+
+        // Check if clinical criteria met (e.g. 70% of frames in buffer must be valid)
+        const validFrames = this.scrubBuffer.filter(v => v).length;
+        const isClinicallyScrubbing = (validFrames / this.scrubBuffer.length) >= 0.7;
+
+        // ONLY count down if AI detects stable, correct scrubbing
+        if (isClinicallyScrubbing) {
+            this.timerVal -= dt;
 
             // Update UI
             const displayVal = Math.ceil(this.timerVal);

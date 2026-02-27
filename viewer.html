@@ -24,13 +24,16 @@
         <div class="viewer-wrapper" id="viewer-wrapper">
             <model-viewer id="apd-viewer"
                 src="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Box/glTF-Binary/Box.glb"
-                auto-rotate scale="0.467 0.194 0.387" base-color="#c6a664" ios-src="" ar
-                ar-modes="scene-viewer webxr quick-look" ar-scale="fixed" camera-controls touch-action="pan-y"
-                shadow-intensity="1.5" shadow-softness="1" exposure="1"
-                alt="Vantive HomeChoice Claria APD Machine — Cardboard Proxy Box" ar-placement="floor"
-                camera-orbit="45deg 65deg 1.5m" min-camera-orbit="auto auto 0.8m" max-camera-orbit="auto auto 3m"
-                min-field-of-view="20deg" max-field-of-view="45deg" field-of-view="45deg" interaction-prompt="auto"
-                loading="eager">
+                auto-rotate ar ar-modes="scene-viewer webxr quick-look" ar-scale="fixed" camera-controls
+                touch-action="pan-y" shadow-intensity="1.5" shadow-softness="1" exposure="1.2"
+                environment-image="neutral" alt="Vantive HomeChoice Claria APD Machine — 46.7×19.4×38.7 cm"
+                ar-placement="floor" camera-orbit="45deg 65deg 1.5m" min-camera-orbit="auto auto 0.8m"
+                max-camera-orbit="auto auto 3m" min-field-of-view="20deg" max-field-of-view="45deg"
+                field-of-view="45deg" interaction-prompt="auto" loading="eager">
+
+                <!-- ─── Zoom Indicator ─── -->
+                <div class="zoom-indicator" id="zoom-indicator">100%</div>
+
                 <!-- ─── AR Button ─── -->
                 <button slot="ar-button" class="ar-button" id="ar-button">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -86,16 +89,19 @@
                     </div>
                 </button>
 
-                <!-- ─── Dimension Annotations ─── -->
-                <div class="dimension-hotspot" slot="hotspot-dim-x" data-position="0 -0.15 0.2" data-normal="0 0 1">
+                <!-- ─── Dimension Annotations (visible by default) ─── -->
+                <div class="dimension-hotspot visible" slot="hotspot-dim-x" data-position="0 -0.12 0.2"
+                    data-normal="0 0 1">
                     <span class="dim-value">46.7 cm</span>
                     <span class="dim-label">width</span>
                 </div>
-                <div class="dimension-hotspot" slot="hotspot-dim-y" data-position="-0.3 0.05 0" data-normal="-1 0 0">
+                <div class="dimension-hotspot visible" slot="hotspot-dim-y" data-position="-0.28 0.05 0"
+                    data-normal="-1 0 0">
                     <span class="dim-value">19.4 cm</span>
                     <span class="dim-label">height</span>
                 </div>
-                <div class="dimension-hotspot" slot="hotspot-dim-z" data-position="0.3 -0.15 0" data-normal="1 0 0">
+                <div class="dimension-hotspot visible" slot="hotspot-dim-z" data-position="0.28 -0.12 0"
+                    data-normal="1 0 0">
                     <span class="dim-value">38.7 cm</span>
                     <span class="dim-label">depth</span>
                 </div>
@@ -128,12 +134,18 @@
                         <button class="control-btn active" id="toggle-hotspots" title="Toggle Hotspots">
                             <span>📌</span> Hotspots
                         </button>
-                        <button class="control-btn" id="toggle-dimensions" title="Toggle Dimensions">
+                        <button class="control-btn active" id="toggle-dimensions" title="Toggle Dimensions">
                             <span>📐</span> Dimensions
+                        </button>
+                        <button class="control-btn" id="capture-view" title="Capture Snapshot">
+                            <span>📸</span> Capture
                         </button>
                     </div>
                 </div>
             </div>
+
+            <!-- ─── Toast Notification ─── -->
+            <div id="toast" class="toast">Configuration Saved!</div>
         </div>
 
         <!-- ─── Info Panel (Slides in from right) ─── -->
@@ -145,6 +157,19 @@
                 <div class="panel-header">
                     <h2>Vantive HomeChoice Claria</h2>
                     <p class="panel-subtitle">Automated Peritoneal Dialysis System (formerly Baxter)</p>
+                </div>
+
+                <div class="panel-section">
+                    <h3>💾 Persistence & Sharing</h3>
+                    <p style="font-size: 0.8rem; opacity: 0.8; line-height: 1.5; margin-bottom: 12px;">
+                        To share your placement configuration with your clinician or save it for later:
+                    </p>
+                    <ul class="feature-list" style="margin-bottom: 16px;">
+                        <li><strong>Capture:</strong> Use the "Capture" button to save a high-res image of your room
+                            setup.</li>
+                        <li><strong>AR View:</strong> Most mobile devices allow you to take a photo directly while in
+                            the "View in Space" mode.</li>
+                    </ul>
                 </div>
 
                 <div class="panel-section">

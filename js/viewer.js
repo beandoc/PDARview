@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════════════
 
 import '@google/model-viewer';
+import { generateColoredBox } from './box-generator.js';
 
 // ─── Elements ───
 const viewer = document.getElementById('apd-viewer');
@@ -12,6 +13,64 @@ const hintOverlay = document.getElementById('hint-overlay');
 const dismissHint = document.getElementById('dismiss-hint');
 const toggleHotspots = document.getElementById('toggle-hotspots');
 const toggleDimensions = document.getElementById('toggle-dimensions');
+const zoomIndicator = document.getElementById('zoom-indicator');
+const captureBtn = document.getElementById('capture-view');
+const toast = document.getElementById('toast');
+
+// ─── 3D Model Loading (Scan vs. Fallback Box) ───
+const REAL_MODEL_PATH = '/assets/models/apd_machine_scan.glb';
+
+(async () => {
+    try {
+        // Check if high-fidelity scan exists
+        const response = await fetch(REAL_MODEL_PATH, { method: 'HEAD' });
+
+        if (response.ok) {
+            // HIGH-FIDELITY SCAN FOUND
+            viewer.src = REAL_MODEL_PATH;
+            // Also update iOS source if needed (usually handles auto-conversion but explicit is better)
+            viewer.iosSrc = REAL_MODEL_PATH.replace('.glb', '.usdz');
+            viewer.scale = '1 1 1';
+            console.log('💎 High-Fidelity 3D Scan Detected & Loaded');
+
+            // Apply premium rendering settings for real models
+            viewer.shadowIntensity = 2;
+            viewer.exposure = 1.2;
+            viewer.environmentImage = 'neutral';
+        } else {
+            // FALLBACK TO GENERATED BOX
+            console.log('ℹ️ No real scan found at /assets/models/, generating calibrated proxy box...');
+            const blobUrl = await generateColoredBox(0.467, 0.194, 0.387, {
+                top: '#d4a843',
+                bottom: '#8b6914',
+                front: '#c6a664',
+                back: '#a58940',
+                right: '#b89a50',
+                left: '#b89a50',
+            });
+            viewer.src = blobUrl;
+            viewer.scale = '1 1 1';
+        }
+    } catch (err) {
+        console.warn('Scan detection failed, using fallback:', err);
+    }
+})();
+
+
+// ─── Live Zoom Percentage Indicator ───
+viewer?.addEventListener('camera-change', () => {
+    if (!zoomIndicator) return;
+    // Extract current distance from camera-orbit string
+    const orbit = viewer.getCameraOrbit();
+    const dist = orbit.radius; // in meters
+    // Reference distance: 1.5m = 100%
+    const refDist = 1.5;
+    const zoomPct = Math.round((refDist / dist) * 100);
+    zoomIndicator.textContent = `${zoomPct}%`;
+    zoomIndicator.classList.toggle('zoomed-in', zoomPct > 120);
+    zoomIndicator.classList.toggle('zoomed-out', zoomPct < 80);
+});
+
 
 // ─── Info Panel Toggle ───
 panelToggle?.addEventListener('click', () => {
@@ -97,7 +156,7 @@ toggleHotspots?.addEventListener('click', () => {
 });
 
 // ─── Toggle Dimension Visibility ───
-let dimensionsVisible = false;
+let dimensionsVisible = true; // Dimensions visible by default
 const dimensionHotspots = document.querySelectorAll('.dimension-hotspot');
 
 toggleDimensions?.addEventListener('click', () => {
@@ -207,6 +266,37 @@ function showStep(index) {
     // Update UI if any tour-specific UI exists
     console.log(`Tour Step ${index + 1}: ${step.title}`);
 }
+
+// ─── Capture View & Toast ───
+function showToast(message) {
+    if (!toast) return;
+    toast.textContent = message;
+    toast.className = 'toast show';
+    setTimeout(() => { toast.className = toast.className.replace('show', ''); }, 3000);
+}
+
+captureBtn?.addEventListener('click', async () => {
+    try {
+        // Take snapshot of model-viewer
+        // .toBlob() or .toDataURL() is supported by <model-viewer>
+        const blob = await viewer.toBlob({
+            idealAspect: true,
+            mimeType: 'image/png'
+        });
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `APD-Placement-${new Date().toISOString().slice(0, 10)}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        showToast('📸 Snapshot Saved to Downloads!');
+    } catch (err) {
+        console.error('Snapshot failed:', err);
+        showToast('❌ Failed to capture view');
+    }
+});
 
 // ─── Keyboard shortcuts ───
 document.addEventListener('keydown', (e) => {

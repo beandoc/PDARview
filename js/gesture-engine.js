@@ -23,8 +23,12 @@ export class GestureEngine {
         this.prevHand = null;
         this.pinchStartDist = null;
         this.stretchStartDist = null;
-        this.lastHandPos = [null, null]; // For scrub velocity
+        this.lastHandPos = [null, null];
         this.handsPresent = false;
+
+        // Smoothing for step detection
+        this.stepBuffer = [];
+        this.stepBufferSize = 15;
     }
 
     async init() {
@@ -147,69 +151,94 @@ export class GestureEngine {
         this.lastHandPos[0] = center;
     }
 
-    // 🧼 SCRUB: Detect two hands overlapping and moving using precise world dimensions (meters)
+    // 🧼 SCRUB: Detect two hands overlapping and moving using 3D world dimensions (meters)
     detectScrubbing(worldLandmarks, normalizedLandmarks) {
         const w1 = worldLandmarks[0];
         const w2 = worldLandmarks[1];
 
-        const h1 = normalizedLandmarks[0];
-        const h2 = normalizedLandmarks[1];
+        // Use 3D Euclidean distance between palms (landmark 9)
+        const dist = Math.sqrt(
+            Math.pow(w1[9].x - w2[9].x, 2) +
+            Math.pow(w1[9].y - w2[9].y, 2) +
+            Math.pow(w1[9].z - w2[9].z, 2)
+        );
 
-        // Palm distance in meters (very precise)
-        const dist = Math.hypot(w1[9].x - w2[9].x, w1[9].y - w2[9].y, w1[9].z - w2[9].z);
-
-        // Velocity check: Is there motion?
+        // Velocity check in 3D
         let isMoving = false;
-        const center1 = h1[9];
-        const center2 = h2[9];
-
         if (this.lastHandPos[0] && this.lastHandPos[1]) {
-            const v1 = Math.hypot(center1.x - this.lastHandPos[0].x, center1.y - this.lastHandPos[0].y);
-            const v2 = Math.hypot(center2.x - this.lastHandPos[1].x, center2.y - this.lastHandPos[1].y);
-            if (v1 > 0.005 || v2 > 0.005) isMoving = true;
+            const v1 = Math.sqrt(
+                Math.pow(w1[9].x - this.lastHandPos[0].x, 2) +
+                Math.pow(w1[9].y - this.lastHandPos[0].y, 2) +
+                Math.pow(w1[9].z - this.lastHandPos[0].z, 2)
+            );
+            const v2 = Math.sqrt(
+                Math.pow(w2[9].x - this.lastHandPos[1].x, 2) +
+                Math.pow(w2[9].y - this.lastHandPos[1].y, 2) +
+                Math.pow(w2[9].z - this.lastHandPos[1].z, 2)
+            );
+            // 0.003m (3mm) per frame motion threshold is standard for "scrubbing" 
+            if (v1 > 0.003 || v2 > 0.003) isMoving = true;
         }
 
-        // Broad scrubbing detection (0.08m = 8cm proximity)
-        const isScrubbing = dist < 0.08 && isMoving;
+        // Broad scrubbing detection (0.1m = 10cm 3D proximity)
+        const isScrubbing = dist < 0.1 && isMoving;
 
         if (isScrubbing) {
-            this.emit('scrub', { active: true, intensity: 1 - (dist / 0.08) });
+            this.emit('scrub', { active: true, intensity: Math.max(0, 1 - (dist / 0.1)) });
 
-            // WHO Specific Step Classification
-            const stepId = this.classifyScrubStep(h1, h2);
-            if (stepId) {
-                this.emit('scrub_step', { step: stepId });
-            }
+            // 🔬 WHO Specific Step Classification using 3D spatial logic
+            const rawStep = this.classifyScrubStep(w1, w2);
+
+            // Temporal Smoothing for Step Classification
+            this.stepBuffer.push(rawStep);
+            if (this.stepBuffer.length > this.stepBufferSize) this.stepBuffer.shift();
+
+            // Find most frequent step in buffer (majority vote)
+            const counts = {};
+            this.stepBuffer.forEach(s => counts[s] = (counts[s] || 0) + 1);
+            const bestStep = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+
+            this.emit('scrub_step', { step: bestStep });
         } else {
             this.emit('scrub', { active: false, intensity: 0 });
+            this.stepBuffer = []; // Clear buffer when hands separate
         }
 
-        this.lastHandPos = [center1, center2];
+        this.lastHandPos = [w1[9], w2[9]];
     }
 
-    // 🔬 Classify specific WHO motions based on landmark geometry
-    classifyScrubStep(h1, h2) {
+    // 🔬 Classify specific WHO motions based on 3D WORLD Landmark geometry
+    classifyScrubStep(w1, w2) {
         // Step 2/3: Interlacing Fingers
-        // If the tips of the index/middle intersect the plane of the other hand
-        const interlacingDist = Math.hypot(h1[8].x - h2[8].x, h1[8].y - h2[8].y);
+        // Vector analysis: Are index fingers parallel but pointing in opposite directions?
+        const v1 = { x: w1[8].x - w1[5].x, y: w1[8].y - w1[5].y, z: w1[8].z - w1[5].z };
+        const v2 = { x: w2[8].x - w2[5].x, y: w2[8].y - w2[5].y, z: w2[8].z - w2[5].z };
+
+        // Normalize
+        const mag1 = Math.sqrt(v1.x ** 2 + v1.y ** 2 + v1.z ** 2);
+        const mag2 = Math.sqrt(v2.x ** 2 + v2.y ** 2 + v2.z ** 2);
+        const dot = (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z) / (mag1 * mag2);
+
+        // Dot product < -0.5 means fingers are roughly pointing at each other (interlaced)
+        const isInterlaced = dot < -0.5;
 
         // Step 6: Thumb Rubbing
-        // If thumb of h1 is completely over the palm of h2 (or vice versa)
-        const thumb1ToPalm2 = Math.hypot(h1[4].x - h2[9].x, h1[4].y - h2[9].y);
-        const thumb2ToPalm1 = Math.hypot(h2[4].x - h1[9].x, h2[4].y - h1[9].y);
+        // 3D distance between thumb tip and opposite palm center
+        const t1ToP2 = Math.sqrt((w1[4].x - w2[9].x) ** 2 + (w1[4].y - w2[9].y) ** 2 + (w1[4].z - w2[9].z) ** 2);
+        const t2ToP1 = Math.sqrt((w2[4].x - w1[9].x) ** 2 + (w2[4].y - w1[9].y) ** 2 + (w2[4].z - w1[9].z) ** 2);
 
         // Step 7: Fingertips in Palm
-        // If clustered fingertips of h1 are over the palm of h2
-        const clusteredFingersDist = Math.hypot(h1[8].x - h1[12].x, h1[8].y - h1[12].y);
-        const tips1ToPalm2 = Math.hypot(h1[8].x - h2[9].x, h1[8].y - h2[9].y);
+        // Check 3D distance of clustered fingertips
+        const tips1ToP2 = Math.sqrt((w1[8].x - w2[9].x) ** 2 + (w1[8].y - w2[9].y) ** 2 + (w1[8].z - w2[9].z) ** 2);
+        const fingerSpread = Math.sqrt((w1[8].x - w1[20].x) ** 2 + (w1[8].y - w1[20].y) ** 2 + (w1[8].z - w1[20].z) ** 2);
 
-        if (thumb1ToPalm2 < 0.05 || thumb2ToPalm1 < 0.05) {
+        if (t1ToP2 < 0.04 || t2ToP1 < 0.04) {
             return 'thumbs';
         }
-        else if (clusteredFingersDist < 0.03 && tips1ToPalm2 < 0.05) {
+        else if (fingerSpread < 0.05 && tips1ToP2 < 0.04) {
             return 'fingertips';
         }
-        else if (interlacingDist < 0.08) {
+        else if (isInterlaced) {
             return 'interlace';
         }
 

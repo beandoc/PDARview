@@ -232,12 +232,10 @@
 
                 <!-- Viewer Area -->
                 <main class="viewer-area">
-                    <model-viewer id="storage-viewer" class="storage-viewer"
-                        src="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Box/glTF-Binary/Box.glb"
-                        ar ar-modes="scene-viewer webxr quick-look" ar-scale="fixed" ar-placement="floor"
-                        camera-controls touch-action="pan-y" shadow-intensity="2" exposure="1"
-                        min-camera-orbit="auto auto 1m" max-camera-orbit="auto auto 4m" max-field-of-view="45deg"
-                        environment-image="neutral" base-color="#c6a664">
+                    <model-viewer id="storage-viewer" class="storage-viewer" src="" ar
+                        ar-modes="scene-viewer webxr quick-look" ar-scale="fixed" ar-placement="floor" camera-controls
+                        touch-action="pan-y" shadow-intensity="2" exposure="1.2" environment-image="neutral"
+                        min-camera-orbit="auto auto 1m" max-camera-orbit="auto auto 4m" max-field-of-view="45deg">
 
                         <button slot="ar-button" class="ar-button" style="bottom: 80px;">
                             View Stack In Your Room
@@ -327,6 +325,7 @@
     <script type="module">
         import '@google/model-viewer';
         import { renderNavbar } from '/js/nav.js';
+        import { generateSupplyStack } from '/js/box-generator.js';
         renderNavbar();
 
         const slider = document.getElementById('box-slider');
@@ -337,28 +336,30 @@
         const viewer = document.getElementById('storage-viewer');
 
         // Box dimensions in meters
-        // Standard Vantive Box dimensions in meters
         const BOX_W = 0.29;
         const BOX_D = 0.47;
         const BOX_H = 0.17;
         const BOX_KG = 12.5;
 
-        let strategy = 'block';
+        let strategy = localStorage.getItem('pd-storage-strategy') || 'block';
 
-        function updateCalculations() {
+        async function updateCalculations() {
             const count = parseInt(slider.value);
+            localStorage.setItem('pd-storage-count', count);
+            localStorage.setItem('pd-storage-strategy', strategy);
+
             display.innerText = `${count} Box${count > 1 ? 'es' : ''}`;
 
             let width = 0, depth = 0, height = 0;
 
             if (strategy === 'block') {
-                const perLayer = 4; // 2x2
+                const perLayer = 4;
                 const layers = Math.ceil(count / perLayer);
                 width = BOX_W * 2;
                 depth = BOX_D * 2;
                 height = BOX_H * layers;
             } else if (strategy === 'wall') {
-                const perLayer = 6; // 6x1
+                const perLayer = 6;
                 const layers = Math.ceil(count / perLayer);
                 width = BOX_W * 6;
                 depth = BOX_D * 1;
@@ -366,9 +367,9 @@
             } else if (strategy === 'pallet') {
                 const perLayer = 5;
                 const layers = Math.ceil(count / perLayer);
-                width = 1.2; // Standard pallet width
-                depth = 1.0; // Standard pallet depth
-                height = (BOX_H * layers) + 0.15; // + pallet height
+                width = 1.2;
+                depth = 1.0;
+                height = (BOX_H * layers) + 0.15;
             } else if (strategy === 'tower') {
                 width = BOX_W;
                 depth = BOX_D;
@@ -379,16 +380,38 @@
             calcHeight.innerText = `${height.toFixed(2)} m`;
             calcWeight.innerText = `${(count * BOX_KG).toFixed(0)} kg`;
 
-            // Dynamically scale the box to represent the total stack size in AR
-            // We use a string "X Y Z" for the model-viewer scale attribute
-            viewer.scale = `${width} ${height} ${depth}`;
-
-            console.log(`Plan updated: ${count} boxes in ${strategy} config. Total dimensions: ${width.toFixed(2)}m W x ${height.toFixed(2)}m H x ${depth.toFixed(2)}m D`);
+            // Generate the multi-colored stacked box model
+            if (!generatingModel) {
+                generatingModel = true;
+                try {
+                    const blobUrl = await generateSupplyStack(count, strategy);
+                    viewer.src = blobUrl;
+                    viewer.scale = '1 1 1';
+                    console.log(`✅ Generated ${count} box stack (${strategy})`);
+                } catch (err) {
+                    console.error('Failed to generate supply stack:', err);
+                }
+                generatingModel = false;
+            }
         }
 
-        slider.addEventListener('input', updateCalculations);
+        // Debounce slider to avoid generating models on every pixel move
+        let sliderTimeout;
+        slider.addEventListener('input', () => {
+            const count = parseInt(slider.value);
+            display.innerText = `${count} Box${count > 1 ? 'es' : ''}`;
+            clearTimeout(sliderTimeout);
+            sliderTimeout = setTimeout(updateCalculations, 300);
+        });
+
+        // Initialize from storage
+        const savedCount = localStorage.getItem('pd-storage-count');
+        if (savedCount) slider.value = savedCount;
 
         document.querySelectorAll('.config-btn').forEach(btn => {
+            if (btn.dataset.type === strategy) btn.classList.add('active');
+            else btn.classList.remove('active');
+
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.config-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');

@@ -226,7 +226,7 @@
                     </div>
 
                     <div class="info-banner" style="margin-top: auto; border-left: 4px solid var(--primary-light);">
-                        <p><strong>📦 Vantive Box:</strong> 29 x 47 x 17 cm<br>
+                        <p><strong>📦 PD Supply Box:</strong> 14" x 8" x 8"<br>
                             <strong>⚖️ Weight:</strong> 12.5 kg (27.5 lbs)<br>
                             <strong>🏠 Goal:</strong> Clear a space 7ft wide x 5ft high.
                         </p>
@@ -320,7 +320,7 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-bottom">
-                <p>© 2026 NephroView. Calculations based on standard Vantive 2000ml box dimensions.</p>
+                <p>© 2026 NephroView. Calculations based on standard PD supply box dimensions (14"x8"x8").</p>
             </div>
         </div>
     </footer>
@@ -339,9 +339,9 @@
         const viewer = document.getElementById('storage-viewer');
 
         // Box dimensions in meters
-        const BOX_W = 0.29;
-        const BOX_D = 0.47;
-        const BOX_H = 0.17;
+        const BOX_W = 0.2032; // 8 inches
+        const BOX_D = 0.3556; // 14 inches
+        const BOX_H = 0.2032; // 8 inches
         const BOX_KG = 12.5;
 
         let strategy = localStorage.getItem('pd-storage-strategy') || 'block';

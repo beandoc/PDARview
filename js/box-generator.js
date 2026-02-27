@@ -77,9 +77,9 @@ export async function generateColoredBox(width, height, depth, colors = {}) {
  * @param {string} strategy - 'block', 'wall', 'tower', 'pallet'
  */
 export async function generateSupplyStack(count, strategy = 'block') {
-    const BOX_W = 0.29;  // meters
-    const BOX_D = 0.47;  // meters
-    const BOX_H = 0.17;  // meters
+    const BOX_W = 0.2032; // 8 inches
+    const BOX_D = 0.3556; // 14 inches
+    const BOX_H = 0.2032; // 8 inches
 
     const scene = new THREE.Scene();
 

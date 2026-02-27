@@ -18,7 +18,7 @@ const captureBtn = document.getElementById('capture-view');
 const toast = document.getElementById('toast');
 
 // ─── 3D Model Loading (Scan vs. Fallback Box) ───
-const REAL_MODEL_PATH = 'assets/models/apd_machine_scan.glb';
+const REAL_MODEL_PATH = 'models/apd_machine_scan.glb';
 
 (async () => {
     try {
@@ -39,7 +39,7 @@ const REAL_MODEL_PATH = 'assets/models/apd_machine_scan.glb';
             viewer.environmentImage = 'neutral';
         } else {
             // FALLBACK TO GENERATED BOX
-            console.log('ℹ️ No real scan found at /assets/models/, generating calibrated proxy box...');
+            console.log('ℹ️ No real scan found at /models/, generating calibrated proxy box...');
             const blobUrl = await generateColoredBox(0.467, 0.194, 0.387, {
                 top: '#d4a843',
                 bottom: '#8b6914',

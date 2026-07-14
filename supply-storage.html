@@ -12,6 +12,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" href="/css/styles.css" />
+
+    <!-- 8th Wall XR Engine — powers the in-page "scan my wall" AR (see /js/ar-session.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" async
+        crossorigin="anonymous" data-preload-chunks="slam"></script>
     <style>
         .storage-layout {
             display: grid;
@@ -239,11 +243,18 @@
                         ar-modes="scene-viewer webxr quick-look" ar-scale="fixed" ar-placement="floor" camera-controls
                         touch-action="pan-y" shadow-intensity="2" exposure="1.2" environment-image="neutral"
                         min-camera-orbit="auto auto 1m" max-camera-orbit="auto auto 4m" max-field-of-view="45deg">
-
-                        <button slot="ar-button" class="ar-button" style="bottom: 80px;">
-                            View Stack In Your Room
-                        </button>
                     </model-viewer>
+
+                    <!-- In-page AR: place the stack on the floor against your wall, live -->
+                    <button class="ar-button" id="launch-storage-ar" style="bottom: 80px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M3 7V5C3 3.89 3.89 3 5 3H7M17 3H19C20.1 3 21 3.9 21 5V7M21 17V19C21 20.1 20.1 21 19 21H17M7 21H5C3.9 21 3 20.1 3 19V17"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                        Scan My Wall &amp; Fit Boxes
+                    </button>
 
                     <div class="dimension-summary">
                         <div class="dim-box">
@@ -329,7 +340,12 @@
         import '@google/model-viewer';
         import { renderNavbar } from './js/nav.js';
         import { generateSupplyStack } from './js/box-generator.js';
+        import { ARSession } from './js/ar-session.js';
         renderNavbar();
+
+        // Latest computed geometry — consumed by the in-page AR launch.
+        let lastDims = { w: 0, h: 0, d: 0 };
+        let lastStackUrl = null;
 
         const slider = document.getElementById('box-slider');
         const display = document.getElementById('box-count-display');
@@ -383,12 +399,14 @@
             calcArea.innerText = `${(width * depth).toFixed(2)} m²`;
             calcHeight.innerText = `${height.toFixed(2)} m`;
             calcWeight.innerText = `${(count * BOX_KG).toFixed(0)} kg`;
+            lastDims = { w: width, h: height, d: depth };
 
             // Generate the multi-colored stacked box model
             if (!generatingModel) {
                 generatingModel = true;
                 try {
                     const blobUrl = await generateSupplyStack(count, strategy);
+                    lastStackUrl = blobUrl;
                     viewer.src = blobUrl;
                     viewer.scale = '1 1 1';
                     console.log(`✅ Generated ${count} box stack (${strategy})`);
@@ -445,14 +463,67 @@
             }
         });
 
-        // Diagnostic: Log if the button is even clicked
-        document.querySelector('.ar-button')?.addEventListener('click', () => {
-            console.log('AR Button Clicked');
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            if (!isMobile) {
-                alert('Floor-placed AR requires a mobile device. Laptops do not support room-scale placement via the camera.');
+        // ─── In-Page AR: "Scan My Wall & Fit Boxes" ───
+        // Storage best-practice callouts anchored onto the stack (model-local metres).
+        function storageCallouts() {
+            const { w, h, d } = lastDims;
+            return [
+                {
+                    id: 'off-floor', emoji: '🚫', title: 'Keep off the floor',
+                    body: 'Stack on a pallet or shelf — floor moisture can damage the outer boxes and bags.',
+                    position: [0, 0.02, d / 2 + 0.01],
+                },
+                {
+                    id: 'fifo', emoji: '🔄', title: 'Rotate stock (FIFO)',
+                    body: 'Use the oldest boxes first. Put new deliveries at the back or bottom.',
+                    position: [0, h * 0.5, d / 2 + 0.01],
+                },
+                {
+                    id: 'temp', emoji: '🌡️', title: '15–30 °C, no sunlight',
+                    body: 'Keep at room temperature, out of direct sun and away from heaters. Never let it freeze.',
+                    position: [0, h + 0.05, 0],
+                },
+                {
+                    id: 'vent', emoji: '💨', title: 'Leave a gap',
+                    body: 'Keep a few cm clear around the stack for airflow and to inspect for leaks.',
+                    position: [w / 2 + 0.02, h * 0.5, 0],
+                },
+            ];
+        }
+
+        async function launchStorageAR() {
+            const btn = document.getElementById('launch-storage-ar');
+            btn?.setAttribute('disabled', '');
+
+            if (!lastStackUrl) { await updateCalculations(); }
+
+            if (await ARSession.isSupported()) {
+                try {
+                    const session = new ARSession({
+                        modelUrl: lastStackUrl,
+                        dimensions: lastDims,
+                        hotspots: storageCallouts(),
+                        onExit: () => btn?.removeAttribute('disabled'),
+                    });
+                    await session.start();
+                    return;
+                } catch (err) {
+                    console.warn('In-page AR failed, falling back to OS AR:', err);
+                }
             }
-        });
+
+            // Fallback: model-viewer Scene Viewer / Quick Look.
+            try {
+                if (viewer.canActivateAR) await viewer.activateAR();
+                else alert('Room AR needs a modern phone (Android Chrome or iOS Safari) with camera access.');
+            } catch (err) {
+                console.error('OS AR activation failed:', err);
+            } finally {
+                btn?.removeAttribute('disabled');
+            }
+        }
+
+        document.getElementById('launch-storage-ar')?.addEventListener('click', launchStorageAR);
 
         updateCalculations();
     </script>

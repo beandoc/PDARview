@@ -4,6 +4,7 @@
 
 import '@google/model-viewer';
 import { generateColoredBox } from './box-generator.js';
+import { ARSession } from './ar-session.js';
 
 // ─── Elements ───
 const viewer = document.getElementById('apd-viewer');
@@ -19,9 +20,22 @@ const toast = document.getElementById('toast');
 
 // ─── 3D Model Loading (Scan vs. Fallback Box) ───
 const REAL_MODEL_PATH = 'models/apd_machine_scan.glb';
+const SPLAT_PATH = 'models/apd_machine.spz'; // optional Gaussian-splat photoreal capture
+
+// Real-world size (metres) — shared by dimension labels + AR absolute scale.
+const DIMENSIONS_M = { w: 0.467, h: 0.194, d: 0.387 };
+
+// Resolved at load time; consumed by the in-page AR session.
+let resolvedModelUrl = REAL_MODEL_PATH;
+let splatUrl = null;
 
 (async () => {
     try {
+        // Does an optional photoreal splat capture ship alongside the mesh?
+        fetch(SPLAT_PATH, { method: 'HEAD' })
+            .then((r) => { if (r.ok) splatUrl = SPLAT_PATH; })
+            .catch(() => { /* no splat — mesh only */ });
+
         // Check if high-fidelity scan exists
         const response = await fetch(REAL_MODEL_PATH, { method: 'HEAD' });
 
@@ -50,6 +64,7 @@ const REAL_MODEL_PATH = 'models/apd_machine_scan.glb';
             });
             viewer.src = blobUrl;
             viewer.scale = '1 1 1';
+            resolvedModelUrl = blobUrl;
         }
     } catch (err) {
         console.warn('Scan detection failed, using fallback:', err);
@@ -248,11 +263,30 @@ const tourSteps = [
 let tourActive = false;
 let currentStep = 0;
 
+const tourBar = document.getElementById('tour-bar');
+const tourStepEl = document.getElementById('tour-step');
+const tourTitleEl = document.getElementById('tour-title');
+const tourBodyEl = document.getElementById('tour-body');
+
 function startTour() {
     tourActive = true;
     currentStep = 0;
     viewer.dismissPoster();
+    tourBar?.removeAttribute('hidden');
     showStep(0);
+}
+
+function exitTour() {
+    tourActive = false;
+    tourBar?.setAttribute('hidden', '');
+    closeAllLabels();
+}
+
+function nextTourStep() {
+    if (!tourActive) return;
+    if (currentStep >= tourSteps.length - 1) { exitTour(); return; }
+    currentStep += 1;
+    showStep(currentStep);
 }
 
 function showStep(index) {
@@ -265,7 +299,73 @@ function showStep(index) {
     const hotspot = document.getElementById(step.target);
     const label = hotspot?.querySelector('.hotspot-label');
     if (label) label.classList.add('active');
+
+    // Drive the on-screen tour bar.
+    if (tourStepEl) tourStepEl.textContent = `${index + 1} / ${tourSteps.length}`;
+    if (tourTitleEl) tourTitleEl.textContent = step.title;
+    if (tourBodyEl) tourBodyEl.textContent = step.content;
+    const nextBtn = document.getElementById('tour-next');
+    if (nextBtn) nextBtn.textContent = index >= tourSteps.length - 1 ? 'Finish ✓' : 'Next ▸';
 }
+
+document.getElementById('start-tour')?.addEventListener('click', startTour);
+document.getElementById('tour-next')?.addEventListener('click', nextTourStep);
+document.getElementById('tour-exit')?.addEventListener('click', exitTour);
+
+// ─── In-Page AR Launch (8th Wall) with OS-AR fallback ───
+function readHotspotsFromDOM() {
+    return Array.from(document.querySelectorAll('.hotspot')).map((h) => {
+        const pos = (h.getAttribute('data-position') || '0 0 0')
+            .split(/\s+/).map(Number);
+        const heading = h.querySelector('h4')?.textContent?.trim() || '';
+        const emoji = heading.match(/^\p{Emoji}/u)?.[0] || '';
+        const title = heading.replace(/^\p{Emoji}\s*/u, '').trim();
+        return {
+            id: h.id,
+            emoji,
+            title,
+            body: h.querySelector('p')?.textContent?.trim() || '',
+            position: [pos[0] || 0, pos[1] || 0, pos[2] || 0],
+        };
+    });
+}
+
+async function launchAR() {
+    const btn = document.getElementById('launch-ar');
+    btn?.setAttribute('disabled', '');
+
+    // Prefer the in-page experience (keeps hotspots/dimensions live on iOS Safari).
+    if (await ARSession.isSupported()) {
+        try {
+            const session = new ARSession({
+                modelUrl: resolvedModelUrl,
+                splatUrl,
+                dimensions: DIMENSIONS_M,
+                hotspots: readHotspotsFromDOM(),
+                onExit: () => btn?.removeAttribute('disabled'),
+            });
+            await session.start();
+            return;
+        } catch (err) {
+            console.warn('In-page AR failed, falling back to OS AR:', err);
+        }
+    }
+
+    // Fallback: model-viewer's Scene Viewer (Android) / Quick Look (iOS).
+    try {
+        if (viewer.canActivateAR) {
+            await viewer.activateAR();
+        } else {
+            alert('AR is not available on this device or browser.\n\nTry opening this page on a modern mobile phone (Android Chrome or iOS Safari) with camera access enabled.');
+        }
+    } catch (err) {
+        console.error('OS AR activation failed:', err);
+    } finally {
+        btn?.removeAttribute('disabled');
+    }
+}
+
+document.getElementById('launch-ar')?.addEventListener('click', launchAR);
 
 // ─── Capture View & Toast ───
 function showToast(message) {
@@ -321,14 +421,11 @@ document.addEventListener('keydown', (e) => {
             break;
         case 'n':
         case 'N':
-            if (tourActive) {
-                currentStep = (currentStep + 1) % tourSteps.length;
-                showStep(currentStep);
-            }
+            nextTourStep();
             break;
         case 'Escape':
             closeAllLabels();
-            tourActive = false;
+            exitTour();
             break;
     }
 });

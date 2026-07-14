@@ -16,8 +16,10 @@
     "vite": "^7.3.1"
   },
   "dependencies": {
-    "@google/model-viewer": "^4.1.0",
+    "@8thwall/engine-binary": "^1.0.0",
+    "@google/model-viewer": "^4.3.1",
+    "@sparkjsdev/spark": "^2.1.0",
     "qrcode": "^1.5.4",
-    "three": "0.172.0"
+    "three": "^0.183.0"
   }
 }

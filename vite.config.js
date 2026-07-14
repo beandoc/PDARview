@@ -7,6 +7,7 @@ export default defineConfig({
             input: {
                 main: resolve(__dirname, 'index.html'),
                 viewer: resolve(__dirname, 'viewer.html'),
+                'pd-therapy': resolve(__dirname, 'pd-therapy.html'),
                 'capture-guide': resolve(__dirname, 'capture-guide.html'),
                 'learn-ckd': resolve(__dirname, 'learn-ckd.html'),
                 'learn-pd': resolve(__dirname, 'learn-pd.html'),

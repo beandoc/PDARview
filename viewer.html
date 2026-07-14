@@ -12,6 +12,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" href="/css/styles.css" />
+
+    <!-- 8th Wall XR Engine (open-source distributed binary, MIT framework).
+         Powers the in-page camera + SLAM world-tracking used by /js/ar-session.js.
+         Must load before ar-session.js resolves XR8Promise. -->
+    <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" async
+        crossorigin="anonymous" data-preload-chunks="slam"></script>
 </head>
 
 <body class="viewer-page">
@@ -33,17 +39,6 @@
 
                 <!-- ─── Zoom Indicator ─── -->
                 <div class="zoom-indicator" id="zoom-indicator">100%</div>
-
-                <!-- ─── AR Button ─── -->
-                <button slot="ar-button" class="ar-button" id="ar-button">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M3 7V5C3 3.89 3.89 3 5 3H7M17 3H19C20.1 3 21 3.9 21 5V7M21 17V19C21 20.1 20.1 21 19 21H17M7 21H5C3.9 21 3 20.1 3 19V17"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
-                    </svg>
-                    View In Your Space
-                </button>
 
                 <!-- ─── Interactive Hotspots ─── -->
                 <button class="hotspot" slot="hotspot-screen" data-position="0 0.09 0.19" data-normal="0 0 1"
@@ -125,6 +120,30 @@
 
             </model-viewer>
 
+            <!-- ─── AR Launch Button (drives in-page 8th Wall AR, falls back to OS AR) ─── -->
+            <button class="ar-button" id="launch-ar">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M3 7V5C3 3.89 3.89 3 5 3H7M17 3H19C20.1 3 21 3.9 21 5V7M21 17V19C21 20.1 20.1 21 19 21H17M7 21H5C3.9 21 3 20.1 3 19V17"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+                </svg>
+                View In Your Space
+            </button>
+
+            <!-- ─── Guided Tour Navigation Bar (shown while a tour is active) ─── -->
+            <div class="tour-bar" id="tour-bar" hidden>
+                <div class="tour-bar__text">
+                    <span class="tour-bar__step" id="tour-step">1 / 4</span>
+                    <strong class="tour-bar__title" id="tour-title"></strong>
+                    <p class="tour-bar__body" id="tour-body"></p>
+                </div>
+                <div class="tour-bar__actions">
+                    <button class="control-btn" id="tour-exit">Exit</button>
+                    <button class="control-btn active" id="tour-next">Next ▸</button>
+                </div>
+            </div>
+
             <!-- ─── Floating Controls ─── -->
             <div class="viewer-controls" id="viewer-controls">
                 <div class="control-group">
@@ -151,6 +170,9 @@
                         </button>
                         <button class="control-btn" id="capture-view" title="Capture Snapshot">
                             <span>📸</span> Capture
+                        </button>
+                        <button class="control-btn" id="start-tour" title="Start Guided Tour">
+                            <span>🎬</span> Tour
                         </button>
                     </div>
                 </div>

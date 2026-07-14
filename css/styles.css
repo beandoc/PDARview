@@ -3230,3 +3230,390 @@ model-viewer {
     justify-content: center;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   In-Page AR Session (8th Wall + Three.js + Spark)
+   ═══════════════════════════════════════════════════════════════ */
+.ar-live {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  background: #000;
+  overflow: hidden;
+  animation: ar-fade-in 0.25s ease;
+}
+
+@keyframes ar-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ar-live__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+/* DOM layer that hotspot / dimension markers are projected onto. */
+.ar-live__markers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ar-markers--hidden { display: none; }
+
+.ar-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+}
+
+.ar-marker__dot {
+  display: block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--primary, #0284c7);
+  border: 3px solid #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  animation: ar-pulse 2s infinite;
+}
+
+@keyframes ar-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.6); }
+  70% { box-shadow: 0 0 0 14px rgba(2, 132, 199, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0); }
+}
+
+.ar-marker__label {
+  display: none;
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 12px);
+  transform: translateX(-50%);
+  width: min(72vw, 280px);
+  padding: 12px 14px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #fff;
+  border-radius: 14px;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  text-align: left;
+}
+
+.ar-marker.open .ar-marker__label { display: block; }
+.ar-marker__label strong { display: block; font-size: 0.95rem; margin-bottom: 4px; }
+.ar-marker__label span { font-size: 0.82rem; line-height: 1.45; opacity: 0.85; }
+
+/* Dimension callouts */
+.ar-marker--dim .ar-marker__dim {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 12px;
+  background: rgba(2, 132, 199, 0.9);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+}
+
+.ar-marker--dim em {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.8;
+}
+
+/* Coaching overlay (scan → tap-to-place) */
+.ar-live__coach {
+  position: absolute;
+  bottom: 22%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: #fff;
+  pointer-events: none;
+  padding: 0 24px;
+}
+
+.ar-live__coach-icon {
+  font-size: 2.4rem;
+  animation: ar-bob 1.8s ease-in-out infinite;
+}
+
+.ar-live__coach[data-state="ready"] .ar-live__coach-icon { animation: none; }
+
+@keyframes ar-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.ar-live__coach-text {
+  margin-top: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+/* HUD (exit + action buttons) */
+.ar-live__hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ar-live__btn {
+  pointer-events: auto;
+  font-family: var(--font);
+  font-weight: 700;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-full, 999px);
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.ar-live__btn:active { transform: scale(0.94); }
+.ar-live__btn.active { background: rgba(2, 132, 199, 0.85); }
+
+.ar-live__exit {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  font-size: 1.1rem;
+}
+
+.ar-live__actions {
+  position: absolute;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+}
+
+.ar-live__actions .ar-live__btn { padding: 12px 20px; font-size: 0.9rem; }
+
+.ar-live__scalebar {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+}
+
+.ar-live__scalebar-fill {
+  width: 28px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--primary, #0284c7);
+}
+
+/* ─── Guided Tour Bar ─── */
+.tour-bar {
+  position: absolute;
+  left: 50%;
+  bottom: 110px;
+  transform: translateX(-50%);
+  width: min(92%, 520px);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 18px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
+  z-index: 40;
+  color: #fff;
+  animation: ar-fade-in 0.3s ease;
+}
+
+.tour-bar[hidden] { display: none; }
+.tour-bar__text { flex: 1; min-width: 0; }
+.tour-bar__step {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--primary-light, #38bdf8);
+  letter-spacing: 0.08em;
+}
+.tour-bar__title { display: block; font-size: 1rem; margin: 2px 0 4px; }
+.tour-bar__body { font-size: 0.82rem; line-height: 1.4; opacity: 0.85; margin: 0; }
+.tour-bar__actions { display: flex; flex-direction: column; gap: 6px; }
+
+@media (max-width: 640px) {
+  .tour-bar { flex-direction: column; align-items: stretch; bottom: 96px; }
+  .tour-bar__actions { flex-direction: row; }
+  .tour-bar__actions .control-btn { flex: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PD Therapy in AR — desktop preview stage + timeline HUD
+   ═══════════════════════════════════════════════════════════════ */
+.therapy-stage {
+  position: relative;
+  width: 100%;
+  height: min(64vh, 560px);
+  border-radius: var(--radius-lg, 20px);
+  overflow: hidden;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(57, 194, 255, 0.14), transparent 60%),
+    linear-gradient(160deg, #0a1420, #060b12);
+}
+
+#therapy-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  cursor: grab;
+}
+#therapy-canvas:active { cursor: grabbing; }
+
+.therapy-preview-hint {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.55);
+  pointer-events: none;
+}
+
+.therapy-stage .ar-button {
+  position: absolute;
+  bottom: 96px;
+  z-index: 20;
+}
+
+/* Timeline HUD — default (desktop card, pinned to bottom of the stage) */
+.therapy-hud {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  width: min(94%, 560px);
+  padding: 14px 16px;
+  background: rgba(10, 18, 28, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  backdrop-filter: blur(14px);
+  color: #fff;
+  z-index: 30;
+}
+
+/* In the live AR overlay, sit above the exit/action row */
+.ar-live .therapy-hud {
+  position: absolute;
+  bottom: max(84px, calc(env(safe-area-inset-bottom) + 76px));
+}
+
+.therapy-hud__status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.therapy-hud__phase {
+  font-weight: 800;
+  font-size: 1rem;
+  padding: 3px 12px;
+  border-radius: 999px;
+}
+.therapy-hud__phase[data-phase="fill"] { background: rgba(57, 194, 255, 0.25); color: #7fdcff; }
+.therapy-hud__phase[data-phase="dwell"] { background: rgba(224, 162, 58, 0.22); color: #f2c078; }
+.therapy-hud__phase[data-phase="drain"] { background: rgba(214, 59, 79, 0.22); color: #ff9db0; }
+
+.therapy-hud__clock {
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
+
+/* Track: three coloured phase segments with a scrubber overlaid */
+.therapy-hud__track {
+  position: relative;
+  display: flex;
+  height: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.therapy-hud__seg { height: 100%; }
+.therapy-hud__seg--fill { flex: 0 0 15%; background: rgba(57, 194, 255, 0.55); }
+.therapy-hud__seg--dwell { flex: 1; background: rgba(224, 162, 58, 0.5); }
+.therapy-hud__seg--drain { flex: 0 0 15%; background: rgba(214, 59, 79, 0.55); }
+
+.therapy-hud__scrub {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.therapy-hud__playhead {
+  position: absolute;
+  top: -3px;
+  width: 4px;
+  height: 16px;
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+  transform: translateX(-2px);
+  pointer-events: none;
+}
+
+.therapy-hud__controls { display: flex; gap: 8px; }
+.therapy-hud__btn {
+  flex: 1;
+  padding: 9px 10px;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.therapy-hud__btn:hover { background: rgba(255, 255, 255, 0.16); }
+.therapy-hud__btn:active { transform: scale(0.96); }
+
+@media (max-width: 640px) {
+  .therapy-stage { height: 72vh; }
+}

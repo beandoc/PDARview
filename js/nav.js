@@ -73,6 +73,10 @@ export function renderNavbar() {
         <div class="nav-dropdown">
           <button class="nav-dropdown-trigger">🎓 Learn <span class="chevron">▾</span></button>
           <div class="nav-dropdown-panel">
+            <a href="/pd-therapy.html" class="dd-link">
+              <span class="dd-icon">🫀</span>
+              <div><strong>Therapy in AR</strong><small>Watch fill · dwell · drain live</small></div>
+            </a>
             <a href="/learn-ckd.html" class="dd-link">
               <span class="dd-icon">🫘</span>
               <div><strong>Understanding CKD</strong><small>Kidney disease stages & eGFR</small></div>
